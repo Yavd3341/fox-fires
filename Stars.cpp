@@ -13,6 +13,9 @@ Stars::Stars(Controller * controller) : RenderLayer(controller) {
 	unsigned int dw = VideoMode::getDesktopMode().width;
 	unsigned int dh = VideoMode::getDesktopMode().height;
 	
+	if (autoSetDelta)
+		blinkDelta = ((double) std::max(dw, dh) / std::min(dw, dh)) * 2.5;
+	
 	starsCount = (dw * dh) / 1000;
 	
 	stars = new double*[starsCount];
@@ -28,13 +31,28 @@ Stars::Stars(Controller * controller) : RenderLayer(controller) {
 }
 
 void Stars::draw() {
+	
+	double timeMapped = map(controller->timeInternal, 0, 86400, -1, 1);
+	
+	if (timeMapped > -0.66 && timeMapped < 0.66)
+		return;
+	
 	for (int i = 0; i < starsCount; i++) {
 		unsigned int x = stars[i][0] * controller->w + radius;
 		unsigned int y = stars[i][1] * controller->h * hMod + radius;
 
 		double waneSine = sin((blinkOffset + i) * M_PI / 180);
+			
+		timeMapped = map(controller->timeInternal, 0, 86400, -1, 1);
 		
-		Color mask(0xFF, 0xFF, 0xFF, map(waneSine, -1, 1, 0.25, 1) * 0xFF);
+		if (timeMapped < 0 && timeMapped > -0.75 && timeMapped < -0.66)
+			timeMapped = map(timeMapped, -0.75, -0.66, 1, 0);
+		else if (timeMapped > 0 && timeMapped > 0.66 && timeMapped < 0.75) 
+			timeMapped = map(timeMapped, 0.66, 0.75, 0, 1);
+		else 
+			timeMapped = 1;
+		
+		Color mask(0xFF, 0xFF, 0xFF, map(waneSine, -1, 1, 0.25, 1) * timeMapped * 0xFF);
 		
 		Vertex line1[] =
 		{

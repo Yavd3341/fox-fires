@@ -20,6 +20,15 @@ namespace FG {
 	static double ease(double v){
 		return v; //pow(v, 1.3);
 	}
+	
+	static Color getMask(double val){
+		int data = round(map(val, 0, 1, 0, 255));
+		return Color(data, data, data, data);
+	}
+	
+	static Color applyAlpha(Color col){
+		return col * Color(col.a, col.a, col.a);
+	}
 
 	// DRAW (Controller) FLAGS
 	#define FLAG_NODRAW 0
@@ -33,14 +42,19 @@ namespace FG {
 			unsigned int w;
 			unsigned int h;
 			
+			double timeInternal = 0;
+			double timeDelta = 24;
+			
 			int dataLength = VideoMode::getDesktopMode().width;
-			Color * sky = new Color[dataLength];
+			Color * skyAmbient = new Color[dataLength];
 			int envs = 0;
 			int envr = 0;
+			int fires = 0;
 			
 			bool flags[3];
 
 			Color backColor;
+			Color ambientColor;
 			
 			Controller();
 		
@@ -148,15 +162,6 @@ namespace FG {
 			Color mask1; 
 			Color mask2;
 			Color mask;
-			
-			//
-			// Protected methods
-			//
-
-			static Color getMask(double val){
-				int data = round(map(val, 0, 1, 0, 255));
-				return Color(data, data, data);
-			}
 		
 		public:
 			
@@ -203,6 +208,7 @@ namespace FG {
 			
 			double blinkOffset = 0;
 			double blinkDelta = 2.5;
+			bool autoSetDelta = true;
 			double hMod = 1;
 			int radius = 6;
 			Color color;
@@ -213,7 +219,27 @@ namespace FG {
 			void update();
 	};
 	
-	class Environment: public RenderLayer {
+	class Sky : public RenderLayer{
+		
+		public:
+			
+			const Color skies[2] = {
+				Color(0x000019FF),
+				Color(0x73C8F0FF)
+			};
+			
+			const Color ambients[2] = {
+				Color(0x8888FFFF),
+				Color(0x00ADFFFF)
+			};
+			
+			Sky (Controller * controller);
+			
+			void draw();
+			void update();
+	};
+	
+	class Ground: public RenderLayer {
 		
 		public:
 			
@@ -227,9 +253,9 @@ namespace FG {
 			double sineMod = 1;
 			double yOffset = 10;
 			double yHeight = 25;
-			double haloHeight = 10;
+			double haloHeight = 15;
 			
-			Environment (Controller * controller);
+			Ground (Controller * controller);
 			
 			void draw();
 			void update();

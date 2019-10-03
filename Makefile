@@ -1,10 +1,10 @@
 all: build clean
 
-build: main.o FoxFires.o Stars.o RenderLayer.o Environment.o
-	g++ main.o FoxFires.o Stars.o RenderLayer.o Environment.o -lsfml-graphics -lsfml-window -lsfml-system -o fox-fires
+build: main.o FoxFires.o Stars.o RenderLayer.o Ground.o Sky.o
+	g++ main.o FoxFires.o Stars.o RenderLayer.o Ground.o Sky.o -lsfml-graphics -lsfml-window -lsfml-system -o fox-fires
 
-Environment.o: Environment.cpp
-	g++ -c Environment.cpp
+Ground.o: Ground.cpp
+	g++ -c Ground.cpp
 	
 main.o: main.cpp
 	g++ -c main.cpp
@@ -14,6 +14,9 @@ FoxFires.o: FoxFires.cpp
 	
 Stars.o: Stars.cpp
 	g++ -c Stars.cpp
+	
+Sky.o: Sky.cpp
+	g++ -c Sky.cpp
 	
 RenderLayer.o: RenderLayer.cpp
 	g++ -c RenderLayer.cpp

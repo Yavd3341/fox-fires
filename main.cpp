@@ -49,47 +49,48 @@ void Controller::init() {
 	// Continue init
 
 	for(int i = 0; i < dataLength; i++)
-		sky[i] = Color(0xFFFFFF11);
+		skyAmbient[i] = ambientColor;
 	
 	CustomFoxFires * ff1 = new CustomFoxFires(this);
 	CustomFoxFires * ff2 = new CustomFoxFires(this);
 	CustomFoxFires * ff3 = new CustomFoxFires(this);
 	
-	ff1->cffOffset = 75;
+	ff1->cffOffset = (h / 7.0);
 	
 	ff2->ySineOffset = 90;
 	ff2->waneSineOffset = 90;
 	ff2->colorOffset = 3;
 	
-	ff3->cffOffset = -75;
+	ff3->cffOffset = -(h / 7.0);
 	ff3->ySineOffset = 180;
 	ff3->waneSineOffset = 180;
 	ff3->colorOffset = 6;
 	
-	Environment * env1 = new Environment(this);
-	Environment * env2 = new Environment(this);
-	Environment * env3 = new Environment(this);
+	Ground * grd1 = new Ground(this);
+	Ground * grd2 = new Ground(this);
+	Ground * grd3 = new Ground(this);
 	
-	env1->yOffset = 100;
-	env1->sineOffset = rand() % 360;
-	env1->sineMod = (rand() % 3 + 1) / 2.0;
-	env1->dark = Color(0xBBBBBBFF);
+	grd1->yOffset = h / 30.0 * 3;
+	grd1->sineOffset = rand() % 360;
+	grd1->sineMod = (rand() % 3 + 1) / 2.0;
+	grd1->dark = Color(0xCCCCCCFF);
 	
-	env2->yOffset = 70;
-	env2->sineOffset = rand() % 360;
-	env2->sineMod = (rand() % 3 + 1) / 2.0;
-	env2->dark = Color(0x888888FF);
+	grd2->yOffset = h / 30.0 * 2;
+	grd2->sineOffset = rand() % 360;
+	grd2->sineMod = (rand() % 3 + 1) / 2.0;
+	grd2->dark = Color(0x999999FF);
 	
-	env3->yOffset = 40;
-	env3->sineOffset = rand() % 360;
-	env3->sineMod = (rand() % 3 + 1) / 2.0;
-	env3->dark = Color(0x555555FF);
+	grd3->yOffset = h / 30.0 * 1;
+	grd3->sineOffset = rand() % 360;
+	grd3->sineMod = (rand() % 3 + 1) / 2.0;
+	grd3->dark = Color(0x555555FF);
 	
+	layers.push_back(new Sky(this));
 	layers.push_back(new Stars(this));
 	
-	layers.push_back(env1);
-	layers.push_back(env2);
-	layers.push_back(env3);
+	layers.push_back(grd1);
+	layers.push_back(grd2);
+	layers.push_back(grd3);
 	
 	layers.push_back(ff1);
 	layers.push_back(ff2);
@@ -142,8 +143,11 @@ void Controller::run() {
 		w = window->getSize().x;
 		h = window->getSize().y;
 		
-		requestDraw();
-		requestUpdate();
+		if(!flags[FLAG_NODRAW])
+			requestDraw();
+			
+		if(!flags[FLAG_PAUSE])
+			requestUpdate();
         
         window->display();
     }
@@ -152,15 +156,17 @@ void Controller::run() {
 void Controller::requestDraw() {
     window->clear(backColor);
         
-	if(!flags[FLAG_NODRAW])
-		for (RenderLayer * layer : layers)
-			layer->draw();
+	for (RenderLayer * layer : layers)
+		layer->draw();
 }
 
 void Controller::requestUpdate() {
-	if(!flags[FLAG_PAUSE])
-		for (RenderLayer * layer : layers)
-			layer->update();
+	timeInternal += timeDelta;
+	if (timeInternal > 86400)
+		timeInternal -= 86400;
+		
+	for (RenderLayer * layer : layers)
+		layer->update();
 }
 
 int main()
