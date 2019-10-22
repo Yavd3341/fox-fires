@@ -21,6 +21,13 @@ Ground::Ground(Controller * controller) : RenderLayer(controller) {
 	
 	mask = Color(0x888888FF);
 	dark = Color(0x777777FF);
+	
+	sineOffset = rand() % 360;
+	treesSineOffset = rand() % 360;
+}
+
+void Ground::bakeTrees() {
+	
 }
 		
 void Ground::draw() {	

@@ -9,6 +9,12 @@ using namespace FG;
 
 bool drawBoundingBox = false;
 
+const double prop = 0.7;
+
+float ease(float f) {
+	return pow(f, 2);
+}
+
 Color getColor(char i) {
 	return Color(i, i, i, 0xFF);
 }
@@ -22,49 +28,18 @@ Pine::Pine(Controller * controller, Vector2f position, Vector2f size) : RenderLa
 	sticksColor = Color(0x01796FFF);
 }
 
-void Pine::drawWithLines(RenderWindow * window, Vector2f pos, Vector2f size, Color log, Color sticks, unsigned int stickCount) {
+Pine::Pine(Controller * controller, Vector2f position, float sizeMult) : RenderLayer(controller) {
+	this->controller = controller;
+	this->position = position;
+	this->sizeMult = sizeMult;
+	this->size = Vector2f(0.1, 0.75);
 	
-	Vector2f stick1long = Vector2f(pos.x, pos.y + size.y) - Vector2f(pos.x + size.x / 2, pos.y);
-	Vector2f stick2long = Vector2f(pos.x, pos.y + size.y) - Vector2f(pos.x + size.x / 2, pos.y);
-	
-	float step = size.y / stickCount;
-		
-	Vertex logVertex[] =
-	{
-		Vertex(Vector2f(pos.x + size.x / 2, pos.y + size.y), log),
-		Vertex(Vector2f(pos.x + size.x / 2, pos.y), log)
-	};
-
-	window->draw(logVertex, 2, Lines);
-	
-	for (int i = 1; i <= stickCount; i++) {
-		
-		float tmp = (step * i);
-		
-		Vector2f base = Vector2f(pos.x + size.x / 2, pos.y + size.y - tmp);
-		
-		Vector2f stick1 = Vector2f(pos.x, pos.y + size.y) - base;
-		Vertex stick1Vertex[] =
-		{
-			Vertex(base, sticks),
-			Vertex(setVectorLenght(stick1, map(getVectorLenght(stick1), 0, getVectorLenght(stick1long), tmp, step)) + base, sticks)
-		};
-
-		window->draw(stick1Vertex, 2, Lines);
-		
-		Vector2f stick2 = Vector2f(pos.x + size.x, pos.y + size.y) - base;
-		Vertex stick2Vertex[] =
-		{
-			Vertex(base, sticks),
-			Vertex(setVectorLenght(stick2, map(getVectorLenght(stick2), 0, getVectorLenght(stick2long), tmp, step)) + base, sticks)
-		};
-
-		window->draw(stick2Vertex, 2, Lines);
-	}
+	logColor = Color(0x2A2016FF);
+	sticksColor = Color(0x01796FFF);
 }
 
-void Pine::drawWithTriangles(RenderWindow * window, Vector2f pos, Vector2f size, Color log, Color sticks, unsigned int stickCount, unsigned int parts) {
-	
+void Pine::drawPine(RenderWindow * window, Vector2f pos, Vector2f size, Color log, Color sticks, unsigned int stickCount, unsigned int parts) {
+		
 	Vector2f s1l = Vector2f(pos.x, pos.y + size.y) - Vector2f(pos.x + size.x / 2, pos.y);
 	Vector2f s2l = Vector2f(pos.x, pos.y + size.y) - Vector2f(pos.x + size.x / 2, pos.y);
 	
@@ -80,11 +55,18 @@ void Pine::drawWithTriangles(RenderWindow * window, Vector2f pos, Vector2f size,
 	
 	float tmpStep = step / parts;
 		
+	Color sky = controller->skyAmbient[(int) pos.x] * Color(0x010101FF);
+		
 	for (int i = stickCount; i > 0; i--) {
+		Color mappedColor = sticks * getColor(map(i, stickCount, 1, 0xFF, 0x77)) + sky;
+		mappedColor.a = 0xFF;
 		
 		float tmp = (step * i);
 		
 		for (int j = 0; j < parts; j++) {
+			
+			float eased = map(ease(map(j, 0, parts, 0, 1)), 1, 0, 1, parts + 2);
+			//std::cout<<step<<" "<<j<<" "<<map(j, 0, parts, 0, 1)<<" "<<ease(map(j, 0, parts, 0, 1))<<" "<<eased<<" "<<tmpStep * eased<<std::endl;
 		
 			Vector2f base = Vector2f(pos.x + size.x / 2, pos.y + size.y - tmp);
 			
@@ -93,8 +75,8 @@ void Pine::drawWithTriangles(RenderWindow * window, Vector2f pos, Vector2f size,
 			
 			stick1.setPoint(0, base);
 			stick1.setPoint(1, setVectorLenght(s1ln, map(getVectorLenght(s1ln), 0, getVectorLenght(s1l), tmp, step)) + base);
-			stick1.setPoint(2, base + Vector2f(0, tmpStep * (parts - j + 2)));
-			stick1.setFillColor(sticks * getColor(map(j, 0, parts-1, 0x88, 0xDD)));
+			stick1.setPoint(2, base + Vector2f(0, tmpStep * eased));
+			stick1.setFillColor(mappedColor * getColor(map(j, 0, parts-1, 0x88, 0xDD)));
 
 			window->draw(stick1);
 			
@@ -103,8 +85,8 @@ void Pine::drawWithTriangles(RenderWindow * window, Vector2f pos, Vector2f size,
 			
 			stick2.setPoint(0, base);
 			stick2.setPoint(1, setVectorLenght(s2ln, map(getVectorLenght(s2ln), 0, getVectorLenght(s2l), tmp, step)) + base);
-			stick2.setPoint(2, base + Vector2f(0, tmpStep * (parts - j + 2)));
-			stick2.setFillColor(sticks * getColor(map(j, 0, parts-1, 0x88, 0xDD)));
+			stick2.setPoint(2, base + Vector2f(0, tmpStep * eased));
+			stick2.setFillColor(mappedColor * getColor(map(j, 0, parts-1, 0x88, 0xDD)));
 
 			window->draw(stick2);
 			
@@ -114,13 +96,14 @@ void Pine::drawWithTriangles(RenderWindow * window, Vector2f pos, Vector2f size,
 
 void Pine::draw() {
 	
+	Vector2f localSize = size * sizeMult;
+	
 	Vector2f winSize = Vector2f(controller->w, controller->h);
-	Vector2f tmpPos = position - Vector2f(size.x / 2, size.y);
-	Vector2f tmpSize = Vector2f(size.x * winSize.x, size.y * winSize.y);
+	Vector2f tmpPos = position - Vector2f(localSize.x / 2, localSize.y);
+	Vector2f tmpSize = Vector2f(localSize.x * winSize.x, localSize.y * winSize.y);
 	tmpPos = Vector2f(tmpPos.x * winSize.x, tmpPos.y * winSize.y);
 	
-	Pine::drawWithTriangles(controller->window, tmpPos, tmpSize, logColor, sticksColor, 20, 3);
-	//Pine::drawWithLines(controller->window, tmpPos, tmpSize, logColor, sticksColor, 50);
+	Pine::drawPine(controller->window, tmpPos, tmpSize, logColor, sticksColor, stickCount, parts);
 	
 	if (drawBoundingBox) {
 		RectangleShape rectangle;

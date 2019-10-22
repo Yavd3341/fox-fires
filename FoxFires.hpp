@@ -16,10 +16,6 @@ namespace FG {
 	static double map(double v, double min1, double max1, double min2, double max2){
 		return (v - min1) / (max1 - min1) * (max2 - min2) + min2;
 	}
-
-	static double ease(double v){
-		return v; //pow(v, 1.3);
-	}
 	
 	static Color getMask(double val){
 		int data = round(map(val, 0, 1, 0, 255));
@@ -256,13 +252,16 @@ namespace FG {
 			
 			Vector2f size;
 			Vector2f position;
+			float sizeMult = 1;
 			
-			static void drawWithTriangles(RenderWindow * window, Vector2f pos, Vector2f size,
-				Color log, Color sticks, unsigned int stickCount, unsigned int stickWidth);
-			static void drawWithLines(RenderWindow * window, Vector2f pos, Vector2f size,
-				Color log, Color sticks, unsigned int stickCount);
+			unsigned int stickCount = 20;
+			unsigned int parts = 3;
+			
+			void drawPine(RenderWindow * window, Vector2f pos, Vector2f size,
+				Color log, Color sticks, unsigned int stickCount, unsigned int parts);
 			
 			Pine(Controller * controller, Vector2f position, Vector2f size);
+			Pine(Controller * controller, Vector2f position, float sizeMult);
 			
 			void draw();
 			void update();
@@ -285,6 +284,10 @@ namespace FG {
 			double haloHeight = 15;
 			
 			Ground (Controller * controller);
+			
+			double treesSineOffset = 0;
+			double treesSineMod = 1;
+			void bakeTrees();
 			
 			void draw();
 			void update();

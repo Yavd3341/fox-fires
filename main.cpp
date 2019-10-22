@@ -20,7 +20,7 @@ class CustomFoxFires : public FoxFires {
 		
 		void postcalc(int i) {
 			totalSize = map(i, 0, controller->w, 0.2,0.9);
-			yOffset = ease(map(i, 0, controller->w, 1, 0));
+			yOffset = map(i, 0, controller->w, 1, 0);
 			yOffset = map(1 - yOffset, 0, 1, controller->h - (controller->h * 0.6), -(controller->h * 0.3)) + cffOffset;
 		}
 	
@@ -71,17 +71,14 @@ void Controller::init() {
 	Ground * grd3 = new Ground(this);
 	
 	grd1->yOffset = h / 30.0 * 3;
-	grd1->sineOffset = rand() % 360;
 	grd1->sineMod = (rand() % 3 + 1) / 2.0;
 	grd1->dark = Color(0xCCCCCCFF);
 	
 	grd2->yOffset = h / 30.0 * 2;
-	grd2->sineOffset = rand() % 360;
 	grd2->sineMod = (rand() % 3 + 1) / 2.0;
 	grd2->dark = Color(0x999999FF);
 	
 	grd3->yOffset = h / 30.0 * 1;
-	grd3->sineOffset = rand() % 360;
 	grd3->sineMod = (rand() % 3 + 1) / 2.0;
 	grd3->dark = Color(0x555555FF);
 	
@@ -96,7 +93,10 @@ void Controller::init() {
 	layers.push_back(ff2);
 	layers.push_back(ff3);
 	
-	layers.push_back(new Pine(this, Vector2f(0.5, 1), Vector2f(0.1, 0.75)));
+	Pine * p = new Pine(this, Vector2f(0.5, 1), 0.25);
+	p->stickCount = 10;
+	
+	layers.push_back(p);
 	
 	settings.antialiasingLevel = 8;
 	
@@ -107,7 +107,7 @@ void Controller::init() {
 	
 	srand(time(NULL));
 	
-	timeInternal = 86400 / 3;
+	//timeInternal = 86400 / 3;
 }
 
 void Controller::run() {
