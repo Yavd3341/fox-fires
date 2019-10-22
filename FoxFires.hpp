@@ -29,6 +29,14 @@ namespace FG {
 	static Color applyAlpha(Color col){
 		return col * Color(col.a, col.a, col.a);
 	}
+	
+	static float getVectorLenght(Vector2f vec) {
+		return sqrt(vec.x * vec.x + vec.y * vec.y);
+	}
+
+	static Vector2f setVectorLenght(Vector2f vec, float len) {
+		return vec / getVectorLenght(vec) * len;
+	}
 
 	// DRAW (Controller) FLAGS
 	#define FLAG_NODRAW 0
@@ -234,6 +242,27 @@ namespace FG {
 			};
 			
 			Sky (Controller * controller);
+			
+			void draw();
+			void update();
+	};
+	
+	class Pine : public RenderLayer {
+		
+		public:
+			
+			Color sticksColor;
+			Color logColor;
+			
+			Vector2f size;
+			Vector2f position;
+			
+			static void drawWithTriangles(RenderWindow * window, Vector2f pos, Vector2f size,
+				Color log, Color sticks, unsigned int stickCount, unsigned int stickWidth);
+			static void drawWithLines(RenderWindow * window, Vector2f pos, Vector2f size,
+				Color log, Color sticks, unsigned int stickCount);
+			
+			Pine(Controller * controller, Vector2f position, Vector2f size);
 			
 			void draw();
 			void update();

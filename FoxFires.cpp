@@ -22,7 +22,7 @@ void FoxFires::draw() {
 	
 	double timeMapped = map(controller->timeInternal, 0, 86400, -1, 1);
 	
-	if (timeMapped > -0.70 && timeMapped < 0.70)
+	if (timeMapped >= -0.70 && timeMapped <= 0.70)
 		return;
 		
 	for(int i = 0; i < controller->w; i++)

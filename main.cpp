@@ -96,6 +96,8 @@ void Controller::init() {
 	layers.push_back(ff2);
 	layers.push_back(ff3);
 	
+	layers.push_back(new Pine(this, Vector2f(0.5, 1), Vector2f(0.1, 0.75)));
+	
 	settings.antialiasingLevel = 8;
 	
 	window = new RenderWindow(flags[FLAG_FULLSCREEN] ? VideoMode::getDesktopMode() : VideoMode(w, h),
@@ -104,6 +106,8 @@ void Controller::init() {
 	window->setMouseCursorVisible(!flags[FLAG_FULLSCREEN]);
 	
 	srand(time(NULL));
+	
+	timeInternal = 86400 / 3;
 }
 
 void Controller::run() {
