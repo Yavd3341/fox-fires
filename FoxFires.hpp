@@ -39,9 +39,18 @@ namespace FG {
 	#define FLAG_FULLSCREEN 1
 	#define FLAG_PAUSE 2
 
+	class RenderLayer;
+	class Controller;
+	class FoxFires;
+	class Stars;
+	class Sky;
+	class Pine;
+	class Ground;
+
 	class Controller {
 
 		public:
+			
 			RenderWindow * window;
 			unsigned int w;
 			unsigned int h;
@@ -67,6 +76,10 @@ namespace FG {
 
 			void requestDraw();
 			void requestUpdate();
+
+		public:
+
+			std::vector<RenderLayer*> layers;
 
 	};
 
@@ -262,6 +275,8 @@ namespace FG {
 
 		public:
 
+			static Vector2f defaultSize;
+
 			Color sticksColor;
 			Color logColor;
 
@@ -306,5 +321,9 @@ namespace FG {
 
 			void draw();
 			void update();
+
+		protected:
+
+			std::vector<RenderLayer*> layers;
 	};
 }

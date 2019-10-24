@@ -26,8 +26,6 @@ class CustomFoxFires : public FoxFires {
 
 };
 
-std::vector<RenderLayer*> layers;
-
 Controller::Controller() {
 	backColor = Color(0,0,25);
 	w = 800;
@@ -73,6 +71,7 @@ void Controller::init() {
 	grd1->yOffset = h / 30.0 * 3;
 	grd1->sineMod = (rand() % 3 + 1) / 2.0;
 	grd1->dark = Color(0xCCCCCCFF);
+	grd1->bakeTrees();
 
 	grd2->yOffset = h / 30.0 * 2;
 	grd2->sineMod = (rand() % 3 + 1) / 2.0;
@@ -93,11 +92,6 @@ void Controller::init() {
 	layers.push_back(ff2);
 	layers.push_back(ff3);
 
-	Pine * p = new Pine(this, Vector2f(0.5, 1), 0.25);
-	p->stickCount = 10;
-
-	layers.push_back(p);
-
 	settings.antialiasingLevel = 8;
 
 	window = new RenderWindow(flags[FLAG_FULLSCREEN] ? VideoMode::getDesktopMode() : VideoMode(w, h),
@@ -110,37 +104,37 @@ void Controller::init() {
 
 void Controller::run() {
 	while (window->isOpen())
-    {
-        Event event;
-        while (window->pollEvent(event))
-        {
-            if (event.type == Event::Closed)
-                window->close();
+  {
+      Event event;
+      while (window->pollEvent(event))
+      {
+          if (event.type == Event::Closed)
+              window->close();
 
-            if (event.type == Event::KeyPressed)
-			{
-				if (event.key.code == Keyboard::Escape)
-					window->close();
+          if (event.type == Event::KeyPressed)
+					{
+						if (event.key.code == Keyboard::Escape)
+							window->close();
 
-				if (event.key.code == Keyboard::Space)
-					flags[FLAG_PAUSE] = !flags[FLAG_PAUSE];
+						if (event.key.code == Keyboard::Space)
+							flags[FLAG_PAUSE] = !flags[FLAG_PAUSE];
 
-				if (event.key.code == Keyboard::F || event.key.code == Keyboard::F11)
-				{
-					flags[FLAG_FULLSCREEN] = !flags[FLAG_FULLSCREEN];
-					window->create(flags[FLAG_FULLSCREEN] ? VideoMode::getDesktopMode() : VideoMode(w, h),
-						"Fox Fires", flags[FLAG_FULLSCREEN] ? Style::Fullscreen : Style::Default, settings);
-					window->setFramerateLimit(fps);
-					window->setMouseCursorVisible(!flags[FLAG_FULLSCREEN]);
-				}
-			}
+						if (event.key.code == Keyboard::F || event.key.code == Keyboard::F11)
+						{
+							flags[FLAG_FULLSCREEN] = !flags[FLAG_FULLSCREEN];
+							window->create(flags[FLAG_FULLSCREEN] ? VideoMode::getDesktopMode() : VideoMode(w, h),
+								"Fox Fires", flags[FLAG_FULLSCREEN] ? Style::Fullscreen : Style::Default, settings);
+							window->setFramerateLimit(fps);
+							window->setMouseCursorVisible(!flags[FLAG_FULLSCREEN]);
+						}
+					}
 
-			if (event.type == Event::Resized)
-			{
-				FloatRect visibleArea(0, 0, event.size.width, event.size.height);
-				window->setView(View(visibleArea));
-			}
-        }
+					if (event.type == Event::Resized)
+					{
+						FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+						window->setView(View(visibleArea));
+					}
+      }
 
 		w = window->getSize().x;
 		h = window->getSize().y;
@@ -151,8 +145,8 @@ void Controller::run() {
 		if(!flags[FLAG_PAUSE])
 			requestUpdate();
 
-        window->display();
-    }
+    window->display();
+  }
 }
 
 void Controller::requestDraw() {
