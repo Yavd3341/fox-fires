@@ -19,8 +19,8 @@ class CustomFoxFires : public FoxFires {
 		CustomFoxFires(Controller * controller) : FoxFires(controller) {}
 
 		void postcalc(int i) {
-			totalSize = map(i, 0, controller->w, 0.2,0.9);
-			yOffset = map(i, 0, controller->w, 1, 0);
+			totalSize = map(i, 0, dataLength, 0.2,0.9);
+			yOffset = map(i, 0, dataLength, 1, 0);
 			yOffset = map(1 - yOffset, 0, 1, controller->h - (controller->h * 0.6), -(controller->h * 0.3)) + cffOffset;
 		}
 

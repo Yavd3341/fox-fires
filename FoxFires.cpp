@@ -15,7 +15,7 @@ FoxFires::FoxFires(Controller * controller) : RenderLayer(controller) {
 	flags = defaultFlags;
 
 	for(int i = 0; i < dataLength; i++)
-		data[i] = 128 + rand() % 128;
+		data[i] = map(rand() % 4096, 0, 4096, 0, 360);
 }
 		
 void FoxFires::draw() {
@@ -25,14 +25,13 @@ void FoxFires::draw() {
 	if (timeMapped >= -0.70 && timeMapped <= 0.70)
 		return;
 		
-	for(int i = 0; i < controller->w; i++)
+	for(int i = 0; i < dataLength; i++)
 	{
 		currentData = data[i];
 			
 		timeMapped = map(controller->timeInternal, 0, 86400, -1, 1);
 			
-		c = (currentData & 0xFF) / 255.0;
-		mapI = map(i, 0, controller->w, 0, 180);
+		mapI = map(i, 0, dataLength, 0, 180);
 		maskDouble = 1;
 		yMod = (flags & Flags::UseYSine) ? map(sin((ySineOffset + mapI * 2) * M_PI / 180.0), -1, 1, 0, 1) : 0;
 		
@@ -54,7 +53,7 @@ void FoxFires::draw() {
 			
 		maskDouble *= timeMapped;
 
-		oneI = (flags & Flags::Monochrome) ? 0.5 : map(i, 0, controller->w, 0, 1);
+		oneI = (flags & Flags::Monochrome) ? 0.5 : map(i, 0, dataLength, 0, 1);
 		x1 = colorOffset;
 		colorBaseIndex = (int) x1;
 		
@@ -80,42 +79,38 @@ void FoxFires::draw() {
 
 		color = color * mask1 + mixedColor * mask2;
 		
+		maskDouble *= map(sin((energySineOffset + currentData) * M_PI / 180.0), -1, 1, 0.1, 1);
+		
 		mask = Color(0xFF, 0xFF, 0xFF, 0xFF * maskDouble);
 		
 		postcalc(i);
 		
 		color *= mask;
 
-		if (controller->w-i < controller->w)
+		Vertex line[] =
 		{
-			Vertex line[] =
-			{
-				Vertex(Vector2f(controller->w-i, yOffset + totalSize * ((yMod * controller->h * (1 - size)) + map(controller->h-(controller->h * c), 0, controller->h, 0, controller->h * size))), Color::Transparent),
-				Vertex(Vector2f(controller->w-i, yOffset + totalSize * ((yMod * controller->h * (1 - size)) + map(controller->h-bottomMargin-coreHeight, 0, controller->h, 0, controller->h * size))), color),
-				Vertex(Vector2f(controller->w-i, yOffset + totalSize * ((yMod * controller->h * (1 - size)) + map(controller->h-bottomMargin, 0, controller->h, 0, controller->h * size))), color),
-				Vertex(Vector2f(controller->w-i, yOffset + totalSize * ((yMod * controller->h * (1 - size)) + map(controller->h-(bottomMargin-(bottomMargin * c)), 0, controller->h, 0, controller->h * size))), Color::Transparent)
-			};
+			Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)))), Color::Transparent),
+			Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)) + (controller->h - bottomMargin - coreHeight) * size)), color),
+			Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)) + (controller->h - bottomMargin) * size)), color),
+			Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)) + controller->h * size)), Color::Transparent)
+		};
+	
+		color *= Color(0xFF * maskDouble, 0xFF * maskDouble, 0xFF * maskDouble, 0xFF) * getMask(1.0 / controller->fires);	
 		
-			color *= Color(0xFF * maskDouble, 0xFF * maskDouble, 0xFF * maskDouble, 0xFF) * getMask(1.0 / controller->fires);			
-			controller->skyAmbient[controller->w-i] += color;
-			
-			controller->window->draw(line, 4, LineStrip);
-		}
+		for (int j = 0; j < 5; j++)	{
+			if (i + j - 2 < 0 || i + j - 2 > dataLength)
+				continue;		
+				
+			controller->skyAmbient[(int) (controller->w - map(i, 0, dataLength, 0, controller->w)) + j - 2] += color;
+		}		
+		
+		controller->window->draw(line, 4, LineStrip);
 	}
 }
 
 void FoxFires::update() {	
-	if((flags & Flags::UpdateData)){
-		int firstData = data[0];
-		for(int i = 0; i < dataLength; i++)
-			if (i > 0)
-				data[i - 1] = data[i];
-		
-		if((flags & Flags::CycleData))
-			data[dataLength - 1] = firstData;
-		else
-			data[dataLength - 1] = 128 + rand() % 128;
-	}
+	if((flags & Flags::UpdateData))
+		energySineOffset += energySineDelta;
 	
 	if((flags & Flags::UpdateYSine) && (flags & Flags::UseYSine))
 		ySineOffset += ySineDelta;
@@ -131,6 +126,9 @@ void FoxFires::update() {
 	
 	if(waneSineOffset > 360)
 		waneSineOffset - 360;
+		
+	if(energySineOffset > 360)
+		energySineOffset - 360;
 	
 	if(colorOffset > colorsLength + 1)
 		colorOffset -= colorsLength;

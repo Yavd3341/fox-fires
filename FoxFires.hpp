@@ -145,7 +145,7 @@ namespace FG {
 			//
 
 			int dataLength = VideoMode::getDesktopMode().width;
-			char* data = new char[dataLength];
+			double* data = new double[dataLength];
 
 			int currentColor = 0;
 			const static int colorsLength = 8;
@@ -175,9 +175,8 @@ namespace FG {
 			// Draw variables
 			//
 
-			char currentData;
+			double currentData;
 
-			double c;
 			double mapI;
 			double maskDouble;
 			double yMod;
@@ -215,10 +214,12 @@ namespace FG {
 			double size = 0.9;
 			double totalSize = 1;
 
+			double energySineOffset;
 			double ySineOffset = 0;
 			double waneSineOffset = 0;
 			double colorOffset = 0;
 
+			double energySineDelta = 1;
 			double ySineDelta = 1.25;
 			double waneSineDelta = 2.5;
 			double colorDelta = 0.001;
