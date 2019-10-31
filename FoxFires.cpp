@@ -97,11 +97,12 @@ void FoxFires::draw() {
 	
 		color *= Color(0xFF * maskDouble, 0xFF * maskDouble, 0xFF * maskDouble, 0xFF) * getMask(1.0 / controller->fires);	
 		
-		for (int j = 0; j < 5; j++)	{
-			if (i + j - 2 < 0 || i + j - 2 > dataLength)
+		for (int j = 0; j < ambientDiff; j++) {
+			unsigned int tmp = map(i, 0, dataLength, 0, controller->dataLength) + j - ambientDiff / 2;
+			if (tmp < 0 || tmp > controller->dataLength - 1)
 				continue;		
-				
-			controller->skyAmbient[(int) (controller->w - map(i, 0, dataLength, 0, controller->w)) + j - 2] += color;
+			
+			controller->skyAmbient[controller->dataLength - tmp - 1] += color;
 		}		
 		
 		controller->window->draw(line, 4, LineStrip);

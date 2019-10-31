@@ -9,7 +9,7 @@ using namespace FG;
 
 Vector2f Pine::defaultSize = Vector2f(0.1999995, 1);
 
-bool drawBoundingBox = false;
+bool drawBoundingBox = true;
 
 const double prop = 0.7;
 
@@ -69,7 +69,7 @@ void Pine::drawPine(RenderWindow * window, Vector2f pos, Vector2f size, Color lo
 
 		for (int j = 0; j < parts; j++) {
 
-			std::cout<<deb++<<std::endl;
+			//std::cout<<deb++<<std::endl;
 
 			float eased = map(ease(map(j, 0, parts, 0, 1)), 1, 0, 1, parts + 2);
 			//std::cout<<step<<" "<<j<<" "<<map(j, 0, parts, 0, 1)<<" "<<ease(map(j, 0, parts, 0, 1))<<" "<<eased<<" "<<tmpStep * eased<<std::endl;
@@ -95,7 +95,6 @@ void Pine::drawPine(RenderWindow * window, Vector2f pos, Vector2f size, Color lo
 			stick2.setFillColor(mappedColor * getColor(map(j, 0, parts-1, 0x88, 0xDD)));
 
 			window->draw(stick2);
-
 		}
 	}
 }

@@ -174,6 +174,8 @@ namespace FG {
 			//
 			// Draw variables
 			//
+			
+			unsigned int ambientDiff = 10;
 
 			double currentData;
 
@@ -219,7 +221,7 @@ namespace FG {
 			double waneSineOffset = 0;
 			double colorOffset = 0;
 
-			double energySineDelta = 1;
+			double energySineDelta = 1.5;
 			double ySineDelta = 1.25;
 			double waneSineDelta = 2.5;
 			double colorDelta = 0.001;

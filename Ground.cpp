@@ -81,8 +81,8 @@ void Ground::draw() {
 	controller->envs--;
 
 	if(controller->envs == 0) {
-		for(int i = 0; i < controller->w; i++)
-			controller->skyAmbient[i] = Color::Transparent;//controller->ambientColor;
+		for(int i = 0; i < controller->dataLength; i++)
+			controller->skyAmbient[controller->dataLength - i - 1] = Color::Transparent;//controller->ambientColor;
 
 		controller->envs = controller->envr;
 	}
@@ -92,7 +92,7 @@ void Ground::draw() {
 }
 
 void Ground::update() {
-	std::cout<<"Update"<<std::endl;
+	//std::cout<<"Update"<<std::endl;
 	for (RenderLayer * layer : layers)
 		layer->update();
 }

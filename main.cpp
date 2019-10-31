@@ -157,7 +157,7 @@ void Controller::requestDraw() {
 }
 
 void Controller::requestUpdate() {
-	timeInternal += timeDelta;
+	//timeInternal += timeDelta;
 	if (timeInternal > 86400)
 		timeInternal -= 86400;
 
