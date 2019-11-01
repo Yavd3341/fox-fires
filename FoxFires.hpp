@@ -42,6 +42,7 @@ namespace FG {
 	#define FLAG_DRAW_GUI 4
 	#define FLAG_SHOW_CURSOR 5
 	#define FLAG_UPDATE_CLOCK 6
+	#define FLAG_REALISTIC_FF 7
 
 	class RenderLayer;
 	class Controller;
@@ -68,13 +69,13 @@ namespace FG {
 			double timeDelta = 10;
 			double timeManualDelta = timeDelta * 10;
 
-			int dataLength = VideoMode::getDesktopMode().width;
-			Color * skyAmbient = new Color[dataLength];
+			int dataLength;
+			Color * skyAmbient = NULL;
 			int envs = 0;
 			int envr = 0;
 			int fires = 0;
 
-			bool flags[7];
+			bool flags[8];
 
 			Color backColor;
 			Color ambientColor;
@@ -239,7 +240,7 @@ namespace FG {
 			double size = 0.9;
 			double totalSize = 1;
 
-			double energySineOffset;
+			double energySineOffset = 0;
 			double ySineOffset = 0;
 			double waneSineOffset = 0;
 			double colorOffset = 0;

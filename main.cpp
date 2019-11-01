@@ -43,6 +43,12 @@ void Controller::initLayers() {
 		delete l;
 	layers.clear();
 	
+	if(skyAmbient != NULL)
+		delete[] skyAmbient;
+	
+	dataLength = VideoMode::getDesktopMode().width;
+	skyAmbient = new Color[dataLength];
+	
 	envs = 0;
 	envr = 0;
 	fires = 0;
@@ -57,15 +63,18 @@ void Controller::initLayers() {
 	CustomFoxFires * ff3 = new CustomFoxFires(this);
 
 	ff1->cffOffset = (h / 7.0);
+	ff1->ySineOffset = map(rand() % 4096, 0, 4096, 0, 360);
+	ff1->waneSineOffset = map(rand() % 4096, 0, 4096, 0, 360);
+	ff1->colorOffset = map(rand() % 4096, 0, 4096, 0, 0.6);
 
-	ff2->ySineOffset = 60;
-	ff2->waneSineOffset = 90;
-	ff2->colorOffset = 0.6;
+	ff2->ySineOffset = map(rand() % 4096, 0, 4096, 0, 360);
+	ff2->waneSineOffset = map(rand() % 4096, 0, 4096, 0, 360);
+	ff2->colorOffset = map(rand() % 4096, 0, 4096, 0, 0.6);
 
 	ff3->cffOffset = -(h / 7.0);
-	ff3->ySineOffset = 30;
-	ff3->waneSineOffset = 180;
-	ff3->colorOffset = 0.3;
+	ff3->ySineOffset = map(rand() % 4096, 0, 4096, 0, 360);
+	ff3->waneSineOffset = map(rand() % 4096, 0, 4096, 0, 360);
+	ff3->colorOffset = map(rand() % 4096, 0, 4096, 0, 0.6);
 
 	Ground * grd1 = new Ground(this);
 	Ground * grd2 = new Ground(this);
@@ -73,17 +82,17 @@ void Controller::initLayers() {
 
 	grd1->yOffset = h / 30.0 * 3;
 	grd1->sineMod = (rand() % 3 + 1) / 2.0;
-	grd1->dark = Color(0xCCCCCCFF);
+	grd1->dark = Color(0xBBBBBBFF);
 	grd1->bakeTrees();
 
 	grd2->yOffset = h / 30.0 * 2;
 	grd2->sineMod = (rand() % 3 + 1) / 2.0;
-	grd2->dark = Color(0x999999FF);
+	grd2->dark = Color(0x888888FF);
 	grd2->bakeTrees();
 
 	grd3->yOffset = h / 30.0 * 1;
 	grd3->sineMod = (rand() % 3 + 1) / 2.0;
-	grd3->dark = Color(0x555555FF);
+	grd3->dark = Color(0x444444FF);
 	grd3->bakeTrees();
 
 	layers.push_back(new Sky(this));
@@ -116,6 +125,7 @@ void Controller::init() {
 	flags[FLAG_DRAW_GUI] = false;
 	flags[FLAG_SHOW_CURSOR] = false;
 	flags[FLAG_UPDATE_CLOCK] = true;
+	flags[FLAG_REALISTIC_FF] = false;
 	
 	std::cout<<"Font status: "<<(flags[FLAG_FONT_FAIL] ? "load failed" : "loaded")<<std::endl;
 
@@ -154,6 +164,12 @@ void Controller::run() {
 
 						if (event.key.code == Keyboard::T)
 							flags[FLAG_UPDATE_CLOCK] = !flags[FLAG_UPDATE_CLOCK];
+
+						if (event.key.code == Keyboard::R)
+							flags[FLAG_REALISTIC_FF] = !flags[FLAG_REALISTIC_FF];
+
+						if (event.key.code == Keyboard::S && timeInternal > 15000 && timeInternal < 70000)
+							timeInternal = 70000;
 							
 						if (event.key.code == Keyboard::F3)
 							flags[FLAG_DRAW_GUI] = !flags[FLAG_DRAW_GUI];

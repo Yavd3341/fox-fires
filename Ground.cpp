@@ -72,6 +72,9 @@ void Ground::draw() {
 		controller->window->draw(line, 3, LineStrip);
 	}
 
+	for (RenderLayer * layer : layers)
+		layer->draw();
+
 	controller->envs--;
 
 	if(controller->envs == 0) {
@@ -80,9 +83,6 @@ void Ground::draw() {
 
 		controller->envs = controller->envr;
 	}
-
-	for (RenderLayer * layer : layers)
-		layer->draw();
 }
 
 void Ground::update() {

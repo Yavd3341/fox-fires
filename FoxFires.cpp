@@ -52,35 +52,43 @@ void FoxFires::draw() {
 			timeMapped = 1;
 			
 		maskDouble *= timeMapped;
-
-		oneI = (flags & Flags::Monochrome) ? 0.5 : map(i, 0, dataLength, 0, 1);
-		x1 = colorOffset;
-		colorBaseIndex = (int) x1;
 		
-		x1 -= colorBaseIndex;
-		x1 += oneI;
+		Color borders;
+		
+		if (!controller->flags[FLAG_REALISTIC_FF]) {
+			oneI = (flags & Flags::Monochrome) ? 0.5 : map(i, 0, dataLength, 0, 1);
+			x1 = colorOffset;
+			colorBaseIndex = (int) x1;
+			
+			x1 -= colorBaseIndex;
+			x1 += oneI;
 
-		if(x1 >= 1)
-		{
-			colorBaseIndex++;
-			x1--;
+			if(x1 >= 1)
+			{
+				colorBaseIndex++;
+				x1--;
+			}
+
+			x2 = 1 - x1;
+			
+			color = colors[colorBaseIndex % colorsLength];
+			mixedColor = colors[(colorBaseIndex + 1) % colorsLength];
+
+			mask1 = getMask(x2); 
+			mask2 = getMask(x1);
+			
+			mask1.a = 0xFF;
+			mask2.a = 0xFF;
+
+			color = color * mask1 + mixedColor * mask2;
+			borders = Color::Transparent;			
 		}
-
-		x2 = 1 - x1;
-		
-		color = colors[colorBaseIndex % colorsLength];
-		mixedColor = colors[(colorBaseIndex + 1) % colorsLength];
-
-		mask1 = getMask(x2); 
-		mask2 = getMask(x1);
-		
-		mask1.a = 0xFF;
-		mask2.a = 0xFF;
-
-		color = color * mask1 + mixedColor * mask2;
+		else {
+			borders = Color(0xFF440000);
+			color = Color(0x22FF88FF);
+		}
 		
 		maskDouble *= map(sin((energySineOffset + currentData) * M_PI / 180.0), -1, 1, 0.1, 1);
-		
 		mask = Color(0xFF, 0xFF, 0xFF, 0xFF * maskDouble);
 		
 		postcalc(i);
@@ -89,10 +97,10 @@ void FoxFires::draw() {
 
 		Vertex line[] =
 		{
-			Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)))), Color::Transparent),
+			Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)))), borders),
 			Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)) + (controller->h - bottomMargin - coreHeight) * size)), color),
 			Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)) + (controller->h - bottomMargin) * size)), color),
-			Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)) + controller->h * size)), Color::Transparent)
+			Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)) + controller->h * size)), borders)
 		};
 	
 		color *= Color(0xFF * maskDouble, 0xFF * maskDouble, 0xFF * maskDouble, 0xFF) * getMask(1.0 / controller->fires);	
@@ -116,7 +124,7 @@ void FoxFires::update() {
 	if((flags & Flags::UpdateYSine) && (flags & Flags::UseYSine))
 		ySineOffset += ySineDelta;
 	
-	if((flags & Flags::UpdateColor) && !(flags & Flags::Monochrome))
+	if((flags & Flags::UpdateColor) && !(flags & Flags::Monochrome) && !controller->flags[FLAG_REALISTIC_FF])
 		colorOffset += colorDelta;
 	
 	if((flags & Flags::UpdateWaneSine) && (flags & Flags::UseWaneSine))
@@ -138,5 +146,5 @@ void FoxFires::update() {
 	controller->debugLabelText += "Energy sine : " + std::to_string(energySineOffset) +  + " (+" + std::to_string(energySineDelta) + ")\n";
 	controller->debugLabelText += "Y sine      : " + std::to_string(ySineOffset) +  + " (+" + std::to_string(ySineDelta) + ")\n";
 	controller->debugLabelText += "Wane sine   : " + std::to_string(waneSineOffset) +  + " (+" + std::to_string(waneSineDelta) + ")\n";
-	controller->debugLabelText += "Color offset: " + std::to_string(colorOffset) +  + " (+" + std::to_string(colorDelta) + ")\n";
+	controller->debugLabelText += "Color offset: " + (controller->flags[FLAG_REALISTIC_FF] ? "[realistic mode]\n" : (std::to_string(colorOffset) + " (+" + std::to_string(colorDelta) + ")\n"));
 }

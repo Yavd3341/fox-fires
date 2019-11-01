@@ -54,12 +54,21 @@ void Pine::drawPine(RenderWindow * window, Vector2f pos, Vector2f size, Color lo
 	};
 
 	window->draw(logVertex, 2, Lines);
+	
+	int px = pos.x;
+	
+	if (px < 0)
+		px = 0;
+	else if(px > controller->w - 1)
+		px = controller->w - 1;
+		
+	px = map(px, 0, controller->w, 0, controller->dataLength);
 
-	Color sky = controller->skyAmbient[(int) pos.x] * Color(0x010101FF);
+	Color sky = controller->skyAmbient[px] * Color(0x222222FF);
 	Color shade = getColor(0x88);
 
 	for (int i = 1; i <= stickCount; i++) {
-		Color mappedColor = sticks * getColor(map(i, stickCount, 1, 0xFF, 0x77)) + sky;
+		Color mappedColor = (sticks * getColor(map(i, stickCount, 1, 0xFF, 0x88)) + sky) * (controller->backColor + Color(0x666666FF));
 		Color layerShade = getColor(map(i, 1, stickCount, 0x88, 0xFF));
 		mappedColor.a = 0xFF;
 
