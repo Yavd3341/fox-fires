@@ -123,13 +123,13 @@ void FoxFires::update() {
 		waneSineOffset += waneSineDelta;
 	
 	if(ySineOffset > 360)
-		ySineOffset - 360;
+		ySineOffset -= 360;
 	
 	if(waneSineOffset > 360)
-		waneSineOffset - 360;
+		waneSineOffset -= 360;
 		
 	if(energySineOffset > 360)
-		energySineOffset - 360;
+		energySineOffset -= 360;
 	
 	if(colorOffset > colorsLength + 1)
 		colorOffset -= colorsLength;
