@@ -27,5 +27,4 @@ void Sky::update() {
 
 	controller->backColor = skies[0] * getMask(timeMapped) + skies[1] * getMask(1 - timeMapped);
 	controller->ambientColor = (ambients[0] * getMask(timeMapped) + ambients[1] * getMask(1 - timeMapped));
-		//* Color(0xFF, 0xFF, 0xFF, 0xFF / (double) controller->fires);
 }

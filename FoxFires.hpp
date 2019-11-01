@@ -159,20 +159,32 @@ namespace FG {
 			double* data = new double[dataLength];
 
 			int currentColor = 0;
-			const static int colorsLength = 8;
+			const static int colorsLength = 5;
 			const Color colors[colorsLength] = {
 				Color(0x00FF8888),
 				Color(0x0088FF88),
 				Color(0xDD00DD88),
-				Color(0xFF444488),
-				Color(0xFF552288),
-				Color(0xFF444488),
 				Color(0xDD00DD88),
 				Color(0x0088FF88)
 			};
 
 			//
-			// Old gradient (compressed)
+			// Gradient 2 - Old gradient (compressed)
+			//
+			
+			// const Color colors[colorsLength] = {
+			//	Color(0x00FF8888),
+			//	Color(0x0088FF88),
+			//	Color(0xDD00DD88),
+			//	Color(0xFF444488),
+			//	Color(0xFF552288),
+			//	Color(0xFF444488),
+			//	Color(0xDD00DD88),
+			//	Color(0x0088FF88)
+			// };
+
+			//
+			// Gradient 1 - Old gradient (compressed)
 			//
 
 			// const Color colors[colorsLength] = {
@@ -299,10 +311,9 @@ namespace FG {
 			float sizeMult = 1;
 
 			unsigned int stickCount = 20;
-			unsigned int parts = 3;
 
 			void drawPine(RenderWindow * window, Vector2f pos, Vector2f size,
-				Color log, Color sticks, unsigned int stickCount, unsigned int parts);
+				Color log, Color sticks, unsigned int stickCount);
 
 			Pine(Controller * controller, Vector2f position, Vector2f size);
 			Pine(Controller * controller, Vector2f position, float sizeMult);

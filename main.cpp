@@ -79,21 +79,23 @@ void Controller::initLayers() {
 	grd2->yOffset = h / 30.0 * 2;
 	grd2->sineMod = (rand() % 3 + 1) / 2.0;
 	grd2->dark = Color(0x999999FF);
+	grd2->bakeTrees();
 
 	grd3->yOffset = h / 30.0 * 1;
 	grd3->sineMod = (rand() % 3 + 1) / 2.0;
 	grd3->dark = Color(0x555555FF);
+	grd3->bakeTrees();
 
 	layers.push_back(new Sky(this));
 	layers.push_back(new Stars(this));
 
-	layers.push_back(grd1);
-	layers.push_back(grd2);
-	layers.push_back(grd3);
-
 	layers.push_back(ff1);
 	layers.push_back(ff2);
 	layers.push_back(ff3);
+
+	layers.push_back(grd1);
+	layers.push_back(grd2);
+	layers.push_back(grd3);
 	
 	debugLabel.setFont(font);
 	debugLabel.setCharacterSize(16);
