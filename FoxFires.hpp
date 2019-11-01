@@ -38,6 +38,10 @@ namespace FG {
 	#define FLAG_NODRAW 0
 	#define FLAG_FULLSCREEN 1
 	#define FLAG_PAUSE 2
+	#define FLAG_FONT_FAIL 3
+	#define FLAG_DRAW_GUI 4
+	#define FLAG_SHOW_CURSOR 5
+	#define FLAG_UPDATE_CLOCK 6
 
 	class RenderLayer;
 	class Controller;
@@ -51,12 +55,18 @@ namespace FG {
 
 		public:
 			
-			RenderWindow * window;
+			Font font;
+			
+			Text debugLabel;
+			std::string debugLabelText;
+			
+			RenderWindow * window = NULL;
 			unsigned int w;
 			unsigned int h;
 
 			double timeInternal = 0;
 			double timeDelta = 10;
+			double timeManualDelta = timeDelta * 10;
 
 			int dataLength = VideoMode::getDesktopMode().width;
 			Color * skyAmbient = new Color[dataLength];
@@ -64,7 +74,7 @@ namespace FG {
 			int envr = 0;
 			int fires = 0;
 
-			bool flags[3];
+			bool flags[7];
 
 			Color backColor;
 			Color ambientColor;
@@ -72,6 +82,7 @@ namespace FG {
 			Controller();
 
 			void init();
+			void initLayers();
 			void run();
 
 			void requestDraw();

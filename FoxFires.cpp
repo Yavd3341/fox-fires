@@ -133,4 +133,10 @@ void FoxFires::update() {
 	
 	if(colorOffset > colorsLength + 1)
 		colorOffset -= colorsLength;
+		
+	controller->debugLabelText += "\n";
+	controller->debugLabelText += "Energy sine : " + std::to_string(energySineOffset) +  + " (+" + std::to_string(energySineDelta) + ")\n";
+	controller->debugLabelText += "Y sine      : " + std::to_string(ySineOffset) +  + " (+" + std::to_string(ySineDelta) + ")\n";
+	controller->debugLabelText += "Wane sine   : " + std::to_string(waneSineOffset) +  + " (+" + std::to_string(waneSineDelta) + ")\n";
+	controller->debugLabelText += "Color offset: " + std::to_string(colorOffset) +  + " (+" + std::to_string(colorDelta) + ")\n";
 }

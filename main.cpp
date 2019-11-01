@@ -7,6 +7,7 @@
 #include <random>
 #include <ctime>
 #include <vector>
+#include <string>
 
 using namespace FG;
 
@@ -36,17 +37,19 @@ Controller::Controller() {
 int fps = 60;
 ContextSettings settings;
 
-void Controller::init() {
+void Controller::initLayers() {
+	
+	for (RenderLayer * l : layers) 
+		delete l;
+	layers.clear();
+	
+	envs = 0;
+	envr = 0;
+	fires = 0;
+	
+	timeInternal = 0;
 
-	// Setting flags
-
-	flags[FLAG_NODRAW] = false;
-	flags[FLAG_FULLSCREEN] = false;
-	flags[FLAG_PAUSE] = false;
-
-	// Continue init
-
-	for(int i = 0; i < dataLength; i++)
+	for (int i = 0; i < dataLength; i++)
 		skyAmbient[i] = ambientColor;
 
 	CustomFoxFires * ff1 = new CustomFoxFires(this);
@@ -91,13 +94,41 @@ void Controller::init() {
 	layers.push_back(ff1);
 	layers.push_back(ff2);
 	layers.push_back(ff3);
+	
+	debugLabel.setFont(font);
+	debugLabel.setCharacterSize(16);
+	debugLabel.setFillColor(Color::White);
+	debugLabel.setOutlineColor(Color::Black);
+	debugLabel.setOutlineThickness(1.5);
+	debugLabel.setPosition(Vector2f(10, 10));
+}
+
+void Controller::init() {
+
+	// Setting flags
+
+	flags[FLAG_NODRAW] = false;
+	flags[FLAG_FULLSCREEN] = false;
+	flags[FLAG_PAUSE] = false;
+	flags[FLAG_FONT_FAIL] = !font.loadFromFile("font.ttf");
+	flags[FLAG_DRAW_GUI] = false;
+	flags[FLAG_SHOW_CURSOR] = false;
+	flags[FLAG_UPDATE_CLOCK] = true;
+	
+	std::cout<<"Font status: "<<(flags[FLAG_FONT_FAIL] ? "load failed" : "loaded")<<std::endl;
+
+	// Continue init
+
+	initLayers();
 
 	settings.antialiasingLevel = 8;
+	
+	if (window != NULL)
+		window->close();
 
 	window = new RenderWindow(flags[FLAG_FULLSCREEN] ? VideoMode::getDesktopMode() : VideoMode(w, h),
 		"Fox Fires", flags[FLAG_FULLSCREEN] ? Style::Fullscreen : Style::Default, settings);
 	window->setFramerateLimit(fps);
-	window->setMouseCursorVisible(!flags[FLAG_FULLSCREEN]);
 
 	srand(time(NULL));
 }
@@ -119,13 +150,62 @@ void Controller::run() {
 						if (event.key.code == Keyboard::Space)
 							flags[FLAG_PAUSE] = !flags[FLAG_PAUSE];
 
+						if (event.key.code == Keyboard::T)
+							flags[FLAG_UPDATE_CLOCK] = !flags[FLAG_UPDATE_CLOCK];
+							
+						if (event.key.code == Keyboard::F3)
+							flags[FLAG_DRAW_GUI] = !flags[FLAG_DRAW_GUI];
+							
+						if (event.key.code == Keyboard::F5) {
+							if(Keyboard::isKeyPressed(Keyboard::LShift) || Keyboard::isKeyPressed(Keyboard::RShift))
+								init();
+							else
+								initLayers();
+						}
+							
+						if (event.key.code == Keyboard::H) {
+							flags[FLAG_SHOW_CURSOR] = !flags[FLAG_SHOW_CURSOR];
+							window->setMouseCursorVisible(flags[FLAG_SHOW_CURSOR]);
+						}
+
 						if (event.key.code == Keyboard::F || event.key.code == Keyboard::F11)
 						{
 							flags[FLAG_FULLSCREEN] = !flags[FLAG_FULLSCREEN];
 							window->create(flags[FLAG_FULLSCREEN] ? VideoMode::getDesktopMode() : VideoMode(w, h),
 								"Fox Fires", flags[FLAG_FULLSCREEN] ? Style::Fullscreen : Style::Default, settings);
 							window->setFramerateLimit(fps);
-							window->setMouseCursorVisible(!flags[FLAG_FULLSCREEN]);
+						}
+				
+						if (event.key.code == Keyboard::Right)
+						{
+							if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl)) {
+								
+							}
+							else {
+								if(Keyboard::isKeyPressed(Keyboard::LShift) || Keyboard::isKeyPressed(Keyboard::RShift))
+									timeInternal += timeManualDelta * 10;
+								else
+									timeInternal += timeManualDelta;
+									
+								if (timeInternal > 86400)
+									timeInternal -= 86400;
+							}
+						}
+						
+						if (event.key.code == Keyboard::Left)
+						{
+							if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl)) {
+								
+							}
+							else {
+								if(Keyboard::isKeyPressed(Keyboard::LShift) || Keyboard::isKeyPressed(Keyboard::RShift))
+									timeInternal -= timeManualDelta * 10;
+								else
+									timeInternal -= timeManualDelta;
+									
+								if (timeInternal < 0)
+									timeInternal += 86400;
+							}
 						}
 					}
 
@@ -154,15 +234,37 @@ void Controller::requestDraw() {
 
 	for (RenderLayer * layer : layers)
 		layer->draw();
+	
+	if (flags[FLAG_DRAW_GUI] && !flags[FLAG_FONT_FAIL])
+		window->draw(debugLabel);
 }
 
 void Controller::requestUpdate() {
-	//timeInternal += timeDelta;
-	if (timeInternal > 86400)
-		timeInternal -= 86400;
+		
+	debugLabelText = "";
+	debugLabelText += "FoxFires ver. 0.5.3\n";
+	debugLabelText += "By Ilya Yavdoschuk\n";
+	debugLabelText += "\n";
+	debugLabelText += "Time " + (std::string)(!flags[FLAG_UPDATE_CLOCK] ? "[paused]" : "        ") + "   : " + std::to_string(timeInternal) + " seconds\n";
+	debugLabelText += "Time delta      : " + std::to_string(timeDelta) + " (" + std::to_string(timeManualDelta) + ") seconds per update\n";
+	debugLabelText += "Sky data length : " + std::to_string(dataLength) + "\n";
+	debugLabelText += "Fires registered: " + std::to_string(fires) + "\n";
+	debugLabelText += "Window size     : " + std::to_string(w) + "x" + std::to_string(h) + " (px)\n";
+	debugLabelText += "AA level        : " + std::to_string(window->getSettings().antialiasingLevel) + "\n";
+	debugLabelText += "\n";
+	debugLabelText += "Fox Fires data:\n";
+	
+	if (flags[FLAG_UPDATE_CLOCK]) {
+		timeInternal += timeDelta;
+		if (timeInternal > 86400)
+			timeInternal -= 86400;
 
+	}
+	
 	for (RenderLayer * layer : layers)
 		layer->update();
+		
+	debugLabel.setString(debugLabelText);
 }
 
 int main()
