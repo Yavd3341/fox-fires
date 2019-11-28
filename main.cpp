@@ -121,7 +121,7 @@ void Controller::init() {
   flags[FLAG_PAUSE] = false;
   flags[FLAG_FONT_FAIL] = !font.loadFromFile("font.ttf");
   flags[FLAG_DRAW_GUI] = false;
-  flags[FLAG_SHOW_CURSOR] = false;
+  flags[FLAG_SHOW_CURSOR] = true;
   flags[FLAG_UPDATE_CLOCK] = true;
   flags[FLAG_REALISTIC_FF] = false;
 
@@ -139,6 +139,7 @@ void Controller::init() {
   window = new RenderWindow(flags[FLAG_FULLSCREEN] ? VideoMode::getDesktopMode() : VideoMode(w, h),
                             "Fox Fires", flags[FLAG_FULLSCREEN] ? Style::Fullscreen : Style::Default, settings);
   window->setFramerateLimit(fps);
+  window->setMouseCursorVisible(flags[FLAG_SHOW_CURSOR]);
 
   srand(time(NULL));
 }
@@ -186,6 +187,7 @@ void Controller::run() {
           window->create(flags[FLAG_FULLSCREEN] ? VideoMode::getDesktopMode() : VideoMode(w, h),
                          "Fox Fires", flags[FLAG_FULLSCREEN] ? Style::Fullscreen : Style::Default, settings);
           window->setFramerateLimit(fps);
+          window->setMouseCursorVisible(flags[FLAG_SHOW_CURSOR]);
         }
 
         if (event.key.code == Keyboard::Right) {
@@ -248,7 +250,7 @@ void Controller::requestDraw() {
 
 void Controller::requestUpdate() {
   debugLabelText = "";
-  debugLabelText += "FoxFires ver. 1.0.0\n";
+  debugLabelText += "FoxFires ver. 1.0.1\n";
   debugLabelText += "By Ilya Yavdoschuk\n";
   debugLabelText += "\n";
   debugLabelText += "Time " + (std::string)(!flags[FLAG_UPDATE_CLOCK] ? "[paused]" : "        ") + "   : " + std::to_string(timeInternal) + " seconds\n";
