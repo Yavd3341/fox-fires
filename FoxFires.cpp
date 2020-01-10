@@ -53,7 +53,7 @@ void FoxFires::draw() {
 
     Color borders;
 
-    if (!controller->flags[FLAG_REALISTIC_FF]) {
+    if (!(controller->flags & Controller::Flags::OverrideFFColors)) {
       oneI = (flags & Flags::Monochrome)? 0.5 : map(i, 0, dataLength, 0, 1);
       x1 = colorOffset;
       colorBaseIndex = (int)x1;
@@ -85,7 +85,9 @@ void FoxFires::draw() {
       color = Color(0x22FF88FF);
     }
 
-    maskDouble *= map(sin((energySineOffset + currentData) * M_PI / 180.0), -1, 1, 0.1, 1);
+    if (flags & Flags::UseData)
+      maskDouble *= map(sin((energySineOffset + currentData) * M_PI / 180.0), -1, 1, 0.1, 1);
+
     mask = Color(0xFF, 0xFF, 0xFF, 0xFF * maskDouble);
 
     postcalc(i);
@@ -121,27 +123,27 @@ void FoxFires::update() {
   if ((flags & Flags::UpdateYSine) && (flags & Flags::UseYSine))
     ySineOffset += ySineDelta;
 
-  if ((flags & Flags::UpdateColor) && !(flags & Flags::Monochrome) && !controller->flags[FLAG_REALISTIC_FF])
+  if ((flags & Flags::UpdateColor) && !(flags & Flags::Monochrome) && !(controller->flags & Controller::Flags::OverrideFFColors))
     colorOffset += colorDelta;
 
   if ((flags & Flags::UpdateWaneSine) && (flags & Flags::UseWaneSine))
     waneSineOffset += waneSineDelta;
 
-  if (ySineOffset > 360)
+  while (ySineOffset > 360)
     ySineOffset -= 360;
 
-  if (waneSineOffset > 360)
+  while (waneSineOffset > 360)
     waneSineOffset -= 360;
 
-  if (energySineOffset > 360)
+  while (energySineOffset > 360)
     energySineOffset -= 360;
 
-  if (colorOffset > colorsLength + 1)
+  while (colorOffset > colorsLength + 1)
     colorOffset -= colorsLength;
 
   controller->debugLabelText += "\n";
   controller->debugLabelText += "Energy sine : " + std::to_string(energySineOffset) +  +" (+" + std::to_string(energySineDelta) + ")\n";
   controller->debugLabelText += "Y sine      : " + std::to_string(ySineOffset) +  +" (+" + std::to_string(ySineDelta) + ")\n";
   controller->debugLabelText += "Wane sine   : " + std::to_string(waneSineOffset) +  +" (+" + std::to_string(waneSineDelta) + ")\n";
-  controller->debugLabelText += "Color offset: " + (controller->flags[FLAG_REALISTIC_FF] ? "[realistic mode]\n" : (std::to_string(colorOffset) + " (+" + std::to_string(colorDelta) + ")\n"));
+  controller->debugLabelText += "Color offset: " + (!(controller->flags & Controller::Flags::OverrideFFColors) ? "[realistic mode]\n" : (std::to_string(colorOffset) + " (+" + std::to_string(colorDelta) + ")\n"));
 }

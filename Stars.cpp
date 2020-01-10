@@ -75,6 +75,6 @@ void Stars::draw() {
 void Stars::update() {
   blinkOffset += blinkDelta;
 
-  if (blinkOffset > 360)
+  while (blinkOffset > 360)
     blinkOffset -= 360;
 }

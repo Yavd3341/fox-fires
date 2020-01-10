@@ -35,16 +35,6 @@ namespace FG {
     return vec / getVectorLenght(vec) * len;
   }
 
-// DRAW (Controller) FLAGS
-  #define FLAG_NODRAW 0
-  #define FLAG_FULLSCREEN 1
-  #define FLAG_PAUSE 2
-  #define FLAG_FONT_FAIL 3
-  #define FLAG_DRAW_GUI 4
-  #define FLAG_SHOW_CURSOR 5
-  #define FLAG_UPDATE_CLOCK 6
-  #define FLAG_REALISTIC_FF 7
-
   class RenderLayer;
   class Controller;
   class FoxFires;
@@ -57,6 +47,21 @@ namespace FG {
 
     public:
 
+      class Flags {
+
+        public:
+
+          static const short NoDraw = 1 << 0;
+          static const short Fullscreen = 1 << 1;
+          static const short Pause = 1 << 2;
+          static const short FontFailure = 1 << 3;
+          static const short DrawGUI = 1 << 4;
+          static const short ShowCursor = 1 << 5;
+          static const short UpdateClock = 1 << 6;
+          static const short OverrideFFColors = 1 << 7;
+      };
+
+      short flags;
       Font font;
 
       Text debugLabel;
@@ -75,8 +80,6 @@ namespace FG {
       int envs = 0;
       int envr = 0;
       int fires = 0;
-
-      bool flags[8];
 
       Color backColor;
       Color ambientColor;
@@ -107,43 +110,6 @@ namespace FG {
       virtual void update() = 0;
   };
 
-// DATA FLAGS
-  #define FLAG_UPDATE_DATA 0
-  #define FLAG_CYCLE_DATA 1
-
-// Y SINE FLAGS
-  #define FLAG_USE_Y_SINE 2
-  #define FLAG_UPDATE_Y_SINE 3
-  #define FLAG_USE_Y_SINE_WANE 4
-
-// COLOR FLAGS
-  #define FLAG_MONOCHROME 5
-  #define FLAG_UPDATE_COLOR 6
-
-// WANE SINE FLAGS
-  #define FLAG_USE_WANE_SINE 7
-  #define FLAG_UPDATE_WANE_SINE 8
-
-  enum Flags {
-    UpdateData     = 1 << FLAG_UPDATE_DATA,
-    CycleData      = 1 << FLAG_CYCLE_DATA,
-    UseYSine       = 1 << FLAG_USE_Y_SINE,
-    UpdateYSine    = 1 << FLAG_UPDATE_Y_SINE,
-    UseYSineWane   = 1 << FLAG_USE_Y_SINE_WANE,
-    Monochrome     = 1 << FLAG_MONOCHROME,
-    UpdateColor    = 1 << FLAG_UPDATE_COLOR,
-    UseWaneSine    = 1 << FLAG_USE_WANE_SINE,
-    UpdateWaneSine = 1 << FLAG_UPDATE_WANE_SINE
-  };
-
-  constexpr inline Flags operator|(Flags a, Flags b){
-    return static_cast<Flags>(static_cast<int>(a) | static_cast<int>(b));
-  }
-
-  constexpr inline Flags operator&(Flags a, Flags b){
-    return static_cast<Flags>(static_cast<int>(a) & static_cast<int>(b));
-  }
-
   class FoxFires : public RenderLayer {
 
     protected:
@@ -164,32 +130,6 @@ namespace FG {
         Color(0xDD00DD88),
         Color(0x0088FF88)
       };
-
-      //
-      // Gradient 2 - Old gradient (compressed)
-      //
-
-      // const Color colors[colorsLength] = {
-      //	Color(0x00FF8888),
-      //	Color(0x0088FF88),
-      //	Color(0xDD00DD88),
-      //	Color(0xFF444488),
-      //	Color(0xFF552288),
-      //	Color(0xFF444488),
-      //	Color(0xDD00DD88),
-      //	Color(0x0088FF88)
-      // };
-
-      //
-      // Gradient 1 - Old gradient (compressed)
-      //
-
-      // const Color colors[colorsLength] = {
-      //  Color(0x00FFFF88),
-      //  Color(0x00FF8888),
-      //  Color(0x88FF0088),
-      //  Color(0xFF44FF88)
-      // };
 
       //
       // Draw variables
@@ -222,7 +162,31 @@ namespace FG {
       // Public variables
       //
 
-      static const Flags defaultFlags = Flags::UpdateData
+      class Flags {
+
+        public:
+
+          // DATA FLAGS
+          static const short UseData = 1 << 0;
+          static const short UpdateData = 1 << 1;
+          static const short CycleData = 1 << 2;
+
+          // Y SINE FLAGS
+          static const short UseYSine = 1 << 3;
+          static const short UpdateYSine = 1 << 4;
+          static const short UseYSineWane = 1 << 5;
+
+          // COLOR FLAGS
+          static const short Monochrome = 1 << 6;
+          static const short UpdateColor = 1 << 7;
+
+          // WANE SINE FLAGS
+          static const short UseWaneSine = 1 << 8;
+          static const short UpdateWaneSine = 1 << 9;
+      };
+
+      static const short defaultFlags = Flags::UseData
+                                        | Flags::UpdateData
                                         | Flags::UseYSine
                                         | Flags::UpdateYSine
                                         | Flags::UseYSineWane
@@ -230,7 +194,7 @@ namespace FG {
                                         | Flags::UseWaneSine
                                         | Flags::UpdateWaneSine;
 
-      Flags flags;
+      short flags;
       int coreHeight = 5;
       int bottomMargin = 100;
       double size = 0.9;
