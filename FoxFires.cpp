@@ -18,15 +18,18 @@ FoxFires::FoxFires(Controller * controller) : RenderLayer(controller) {
     data[i] = map(rand() % 4096, 0, 4096, 0, 360);
 }
 
-void FoxFires::draw() {
+void FoxFires::draw(RenderTarget * renderTarget) {
 
   double timeMapped = map(controller->timeInternal, 0, 86400, -1, 1);
 
   if (timeMapped >= -0.70 && timeMapped <= 0.70)
     return;
 
-  for (int i = 0; i < dataLength; i++) {
+  for (int x = 0; x < controller->w; x++) {
+    int i = map(x, 0, controller->w, 0, dataLength);
     currentData = data[i];
+    prevData = (i == 0 ? currentData : data[i - 1]);
+    nextData = (i == dataLength - 1 ? currentData : data[i + 1]);
 
     timeMapped = map(controller->timeInternal, 0, 86400, -1, 1);
 
@@ -85,34 +88,39 @@ void FoxFires::draw() {
       color = Color(0x22FF88FF);
     }
 
-    if (flags & Flags::UseData)
-      maskDouble *= map(sin((energySineOffset + currentData) * M_PI / 180.0), -1, 1, 0.1, 1);
+    if (flags & Flags::UseData) {
+      double pm = map(x - i * ((float)controller->w / dataLength), 0, ((float)controller->w / dataLength), 0, 1);
+      double curr = map(sin((energySineOffset + currentData) * M_PI / 180.0), -1, 1, 0.1, 1);
+      double next = map(sin((energySineOffset + nextData) * M_PI / 180.0), -1, 1, 0.1, 1);
+      next -= curr;
+      maskDouble *= (curr + next * pm);
+    }
 
     mask = Color(0xFF, 0xFF, 0xFF, 0xFF * maskDouble);
 
-    postcalc(i);
+    postcalc(x);
 
     color *= mask;
 
     Vertex line[] =
     {
-      Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)))), borders),
-      Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)) + (controller->h - bottomMargin - coreHeight) * size)), color),
-      Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)) + (controller->h - bottomMargin) * size)), color),
-      Vertex(Vector2f(controller->w - map(i, 0, dataLength, 0, controller->w), yOffset + totalSize * ((yMod * controller->h * (1 - size)) + controller->h * size)), borders)
+      Vertex(Vector2f(controller->w - x, yOffset + totalSize * ((yMod * controller->h * (1 - size)))), borders),
+      Vertex(Vector2f(controller->w - x, yOffset + totalSize * ((yMod * controller->h * (1 - size)) + (controller->h - bottomMargin - coreHeight) * size)), color),
+      Vertex(Vector2f(controller->w - x, yOffset + totalSize * ((yMod * controller->h * (1 - size)) + (controller->h - bottomMargin) * size)), color),
+      Vertex(Vector2f(controller->w - x, yOffset + totalSize * ((yMod * controller->h * (1 - size)) + controller->h * size)), borders)
     };
 
     color *= Color(0xFF * maskDouble, 0xFF * maskDouble, 0xFF * maskDouble, 0xFF) * getMask(1.0 / controller->fires);
 
     for (int j = 0; j < ambientDiff; j++) {
-      unsigned int tmp = map(i, 0, dataLength, 0, controller->dataLength) + j - ambientDiff / 2;
-      if (tmp < 0 || tmp > controller->dataLength - 1)
+      unsigned int tmp = map(x, 0, controller->w, 0, controller->dataLength) + j - ambientDiff / 2;
+      if (tmp < 0 || tmp > controller->w - 1)
         continue;
 
       controller->skyAmbient[controller->dataLength - tmp - 1] += color;
     }
 
-    controller->window->draw(line, 4, LineStrip);
+    renderTarget->draw(line, 4, LineStrip);
   }
 }
 
@@ -145,5 +153,5 @@ void FoxFires::update() {
   controller->debugLabelText += "Energy sine : " + std::to_string(energySineOffset) +  +" (+" + std::to_string(energySineDelta) + ")\n";
   controller->debugLabelText += "Y sine      : " + std::to_string(ySineOffset) +  +" (+" + std::to_string(ySineDelta) + ")\n";
   controller->debugLabelText += "Wane sine   : " + std::to_string(waneSineOffset) +  +" (+" + std::to_string(waneSineDelta) + ")\n";
-  controller->debugLabelText += "Color offset: " + (!(controller->flags & Controller::Flags::OverrideFFColors) ? "[realistic mode]\n" : (std::to_string(colorOffset) + " (+" + std::to_string(colorDelta) + ")\n"));
+  controller->debugLabelText += "Color offset: " + ((controller->flags & Controller::Flags::OverrideFFColors) ? "[realistic mode]\n" : (std::to_string(colorOffset) + " (+" + std::to_string(colorDelta) + ")\n"));
 }

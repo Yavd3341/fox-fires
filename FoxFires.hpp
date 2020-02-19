@@ -59,6 +59,7 @@ namespace FG {
           static const short ShowCursor = 1 << 5;
           static const short UpdateClock = 1 << 6;
           static const short OverrideFFColors = 1 << 7;
+          static const short TargetChanged = 1 << 8;
       };
 
       short flags;
@@ -67,6 +68,7 @@ namespace FG {
       Text debugLabel;
       std::string debugLabelText;
 
+      RenderTarget * renderTarget = NULL;
       RenderWindow * window = NULL;
       unsigned int w;
       unsigned int h;
@@ -86,7 +88,7 @@ namespace FG {
 
       Controller();
 
-      void init();
+      void init(bool windowOnly);
       void initLayers();
       void run();
 
@@ -106,7 +108,7 @@ namespace FG {
 
       RenderLayer(Controller * controller);
 
-      virtual void draw() = 0;
+      virtual void draw(RenderTarget * renderTarget) = 0;
       virtual void update() = 0;
   };
 
@@ -118,7 +120,7 @@ namespace FG {
       // Controller variables
       //
 
-      int dataLength = VideoMode::getDesktopMode().width;
+      int dataLength = VideoMode::getDesktopMode().width / 10;
       double* data = new double[dataLength];
 
       int currentColor = 0;
@@ -137,7 +139,9 @@ namespace FG {
 
       unsigned int ambientDiff = 10;
 
+      double prevData;
       double currentData;
+      double nextData;
 
       double mapI;
       double maskDouble;
@@ -212,9 +216,9 @@ namespace FG {
 
       FoxFires(Controller * controller);
 
-      virtual void postcalc(int i) = 0;
+      virtual void postcalc(int x) = 0;
 
-      void draw();
+      void draw(RenderTarget * renderTarget);
       void update();
   };
 
@@ -234,7 +238,7 @@ namespace FG {
 
       Stars (Controller * controller);
 
-      void draw();
+      void draw(RenderTarget * renderTarget);
       void update();
   };
 
@@ -254,7 +258,7 @@ namespace FG {
 
       Sky (Controller * controller);
 
-      void draw();
+      void draw(RenderTarget * renderTarget);
       void update();
   };
 
@@ -273,13 +277,13 @@ namespace FG {
 
       unsigned int stickCount = 20;
 
-      void drawPine(RenderWindow * window, Vector2f pos, Vector2f size,
+      void drawPine(RenderTarget * renderTarget, Vector2f pos, Vector2f size,
                     Color log, Color sticks, unsigned int stickCount);
 
       Pine(Controller * controller, Vector2f position, Vector2f size);
       Pine(Controller * controller, Vector2f position, float sizeMult);
 
-      void draw();
+      void draw(RenderTarget * renderTarget);
       void update();
   };
 
@@ -305,7 +309,7 @@ namespace FG {
       double treesSineMod = 1;
       void bakeTrees();
 
-      void draw();
+      void draw(RenderTarget * renderTarget);
       void update();
 
     protected:

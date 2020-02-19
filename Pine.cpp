@@ -40,7 +40,7 @@ Pine::Pine(Controller * controller, Vector2f position, float sizeMult) : RenderL
   sticksColor = Color(0x01796FFF);
 }
 
-void Pine::drawPine(RenderWindow * window, Vector2f pos, Vector2f size, Color log, Color sticks, unsigned int stickCount){
+void Pine::drawPine(RenderTarget * renderTarget, Vector2f pos, Vector2f size, Color log, Color sticks, unsigned int stickCount){
   Vector2f s1l = Vector2f(pos.x, pos.y + size.y) - Vector2f(pos.x + size.x / 2, pos.y);
   Vector2f s2l = Vector2f(pos.x, pos.y + size.y) - Vector2f(pos.x + size.x / 2, pos.y);
 
@@ -52,7 +52,7 @@ void Pine::drawPine(RenderWindow * window, Vector2f pos, Vector2f size, Color lo
     Vertex(Vector2f(pos.x + size.x / 2, pos.y), log)
   };
 
-  window->draw(logVertex, 2, Lines);
+  renderTarget->draw(logVertex, 2, Lines);
 
   int px = pos.x;
 
@@ -83,11 +83,11 @@ void Pine::drawPine(RenderWindow * window, Vector2f pos, Vector2f size, Color lo
       Vertex(base + Vector2f(0, step * 1.5), mappedColor * layerShade),
       Vertex(setVectorLenght(s2ln, map(getVectorLenght(s2ln), 0, getVectorLenght(s2l), tmp, step)) + base, mappedColor * shade * layerShade)
     };
-    window->draw(stick, 4, Quads);
+    renderTarget->draw(stick, 4, Quads);
   }
 }
 
-void Pine::draw(){
+void Pine::draw(RenderTarget * renderTarget){
   Vector2f localSize = size * sizeMult;
 
   Vector2f winSize = Vector2f(controller->w, controller->h);
@@ -96,7 +96,7 @@ void Pine::draw(){
 
   tmpPos = Vector2f(tmpPos.x * winSize.x, tmpPos.y * winSize.y);
 
-  Pine::drawPine(controller->window, tmpPos, tmpSize, logColor, sticksColor, stickCount);
+  Pine::drawPine(renderTarget, tmpPos, tmpSize, logColor, sticksColor, stickCount);
 
   if (drawBoundingBox) {
     RectangleShape rectangle;
@@ -105,19 +105,19 @@ void Pine::draw(){
     rectangle.setFillColor(Color::Transparent);
     rectangle.setOutlineThickness(1);
     rectangle.setPosition(tmpPos);
-    controller->window->draw(rectangle);
+    renderTarget->draw(rectangle);
 
     CircleShape circle;
     circle.setRadius(2);
     circle.setFillColor(sf::Color::Yellow);
     circle.setPosition(tmpPos - Vector2f(2, 2));
-    controller->window->draw(circle);
+    renderTarget->draw(circle);
 
     CircleShape circle2;
     circle2.setRadius(2);
     circle2.setFillColor(sf::Color::Green);
     circle2.setPosition(Vector2f(position.x * winSize.x, position.y * winSize.y) - Vector2f(2, 2));
-    controller->window->draw(circle2);
+    renderTarget->draw(circle2);
   }
 }
 

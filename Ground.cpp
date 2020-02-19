@@ -53,7 +53,7 @@ void Ground::bakeTrees() {
   }
 }
 
-void Ground::draw() {
+void Ground::draw(RenderTarget * renderTarget) {
   for (int i = 0; i < controller->w; i++) {
     double mapI = map(i, 0, controller->w, 0, 360);
     double yMod = map(sin((sineOffset + mapI * sineMod) * M_PI / 180.0), -1, 1, 0, 1);
@@ -67,11 +67,11 @@ void Ground::draw() {
       Vertex(Vector2f(i, controller->h), (color2 + color2 * mask) * dark)
     };
 
-    controller->window->draw(line, 3, LineStrip);
+    renderTarget->draw(line, 3, LineStrip);
   }
 
   for (RenderLayer * layer : layers)
-    layer->draw();
+    layer->draw(renderTarget);
 
   controller->envs--;
 

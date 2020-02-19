@@ -16,11 +16,14 @@ Usage
 * <kbd>F3</kbd> - Debug screen (requires *font.ttf*)
 * <kbd>F5</kbd> - Re-init layers
 * <kbd>F5</kbd> + <kbd>Shift</kbd> - Re-init program
+* <kbd>F5</kbd> + <kbd>Ctrl</kbd> - Recreate window
 * <kbd>H</kbd> - Hide cursor
+* <kbd>E</kbd> - Save fullscreen image
 * <kbd>S</kbd> - Skip day
 * <kbd>R</kbd> - Toggle realistic mode
 * <kbd>F</kbd> (<kbd>F11</kbd>) - Fullscreen
 * <kbd>←</kbd>, <kbd>→</kbd> - Change time (10 times faster when holding <kbd>Shift</kbd>)
+* <kbd>[</kbd>, <kbd>]</kbd> - Change antialiasing level (from 0 to 16)
 
 Realistic mode
 --------------

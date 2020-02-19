@@ -19,9 +19,9 @@ class CustomFoxFires : public FoxFires {
     CustomFoxFires(Controller * controller) : FoxFires(controller) {
     }
 
-    void postcalc(int i) {
-      totalSize = map(i, 0, dataLength, 0.2, 0.9);
-      yOffset = map(i, 0, dataLength, 1, 0);
+    void postcalc(int x) {
+      totalSize = map(x, 0, controller->w, 0.2, 0.9);
+      yOffset = map(x, 0, controller->w, 1, 0);
       yOffset = map(1 - yOffset, 0, 1, controller->h - (controller->h * 0.6), -(controller->h * 0.3)) + cffOffset;
     }
 };
@@ -112,22 +112,25 @@ void Controller::initLayers() {
   debugLabel.setPosition(Vector2f(10, 10));
 }
 
-void Controller::init() {
+void Controller::init(bool windowOnly) {
 
-  // Setting flags
+  if (!windowOnly) {
+    // Setting flags
 
-  flags = Flags::ShowCursor | Flags::UpdateClock;
+    flags = Flags::ShowCursor | Flags::UpdateClock;
 
-  if (!font.loadFromFile("font.ttf"))
-    flags |= Flags::FontFailure;
+    if (!font.loadFromFile("font.ttf"))
+      flags |= Flags::FontFailure;
 
-  std::cout << "Font status: " << (flags & Flags::FontFailure ? "load failed" : "loaded") << std::endl;
+    std::cout << "Font status: " << (flags & Flags::FontFailure ? "load failed" : "loaded") << std::endl;
 
-  // Continue init
+    // Continue init
 
-  initLayers();
+    srand(time(NULL));
 
-  settings.antialiasingLevel = 8;
+    initLayers();
+    settings.antialiasingLevel = 8;
+  }
 
   if (window != NULL)
     window->close();
@@ -136,12 +139,12 @@ void Controller::init() {
                             "Fox Fires", flags & Flags::Fullscreen ? Style::Fullscreen : Style::Default, settings);
   window->setFramerateLimit(fps);
   window->setMouseCursorVisible(flags & Flags::ShowCursor);
-
-  srand(time(NULL));
 }
 
 void Controller::run() {
   while (window->isOpen()) {
+    renderTarget = window;
+
     Event event;
     while (window->pollEvent(event)) {
       if (event.type == Event::Closed)
@@ -157,6 +160,13 @@ void Controller::run() {
         if (event.key.code == Keyboard::T)
           flags ^= Flags::UpdateClock;
 
+        if (event.key.code == Keyboard::E) {
+          flags |= Flags::TargetChanged;
+          RenderTexture* rt = new RenderTexture();
+          rt->create(VideoMode::getDesktopMode().width, VideoMode::getDesktopMode().height, settings);
+          renderTarget = rt;
+        }
+
         if (event.key.code == Keyboard::R)
           flags ^= Flags::OverrideFFColors;
 
@@ -168,7 +178,9 @@ void Controller::run() {
 
         if (event.key.code == Keyboard::F5) {
           if (Keyboard::isKeyPressed(Keyboard::LShift) || Keyboard::isKeyPressed(Keyboard::RShift))
-            init();
+            init(false);
+          else if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl))
+            init(true);
           else
             initLayers();
         }
@@ -213,6 +225,16 @@ void Controller::run() {
               timeInternal += 86400;
           }
         }
+
+        if (event.key.code == Keyboard::RBracket) {
+          if (settings.antialiasingLevel < 16)
+            settings.antialiasingLevel++;
+        }
+
+        if (event.key.code == Keyboard::LBracket) {
+          if (settings.antialiasingLevel > 0)
+            settings.antialiasingLevel--;
+        }
       }
 
       if (event.type == Event::Resized) {
@@ -221,32 +243,47 @@ void Controller::run() {
       }
     }
 
-    w = window->getSize().x;
-    h = window->getSize().y;
-
-    if (!(flags & Flags::NoDraw))
-      requestDraw();
+    w = renderTarget->getSize().x;
+    h = renderTarget->getSize().y;
 
     if (!(flags & Flags::Pause))
       requestUpdate();
 
-    window->display();
+    if (!(flags & Flags::NoDraw))
+      requestDraw();
+
+    if (flags & Flags::TargetChanged) {
+      flags &= ~Flags::TargetChanged;
+      RenderTexture* rt = (RenderTexture*)renderTarget;
+      rt->display();
+      window->draw(Sprite(rt->getTexture()));
+
+      time_t curr_time;
+      tm * ct;
+      time(&curr_time);
+      ct = localtime(&curr_time);
+
+      rt->getTexture().copyToImage().saveToFile(std::to_string(ct->tm_year + 1900) + "-" + std::to_string(ct->tm_mon + 1) + "-" + std::to_string(ct->tm_mday) + "T"
+                                                + std::to_string(ct->tm_hour) + "-" + std::to_string(ct->tm_min) + "-" + std::to_string(ct->tm_sec) + ".png");
+    }
+    else
+      window->display();
   }
 }
 
 void Controller::requestDraw() {
-  window->clear(backColor);
+  renderTarget->clear(backColor);
 
   for (RenderLayer * layer : layers)
-    layer->draw();
+    layer->draw(renderTarget);
 
   if (flags & Flags::DrawGUI && ~flags & Flags::FontFailure)
-    window->draw(debugLabel);
+    renderTarget->draw(debugLabel);
 }
 
 void Controller::requestUpdate() {
   debugLabelText = "";
-  debugLabelText += "FoxFires ver. 1.0.1\n";
+  debugLabelText += "FoxFires ver. 1.1.0\n";
   debugLabelText += "By Ilya Yavdoschuk\n";
   debugLabelText += "\n";
   debugLabelText += "Time " + (std::string)(!(flags & Flags::UpdateClock)? "[paused]" : "        ") + "   : " + std::to_string(timeInternal) + " seconds\n";
@@ -254,7 +291,7 @@ void Controller::requestUpdate() {
   debugLabelText += "Sky data length : " + std::to_string(dataLength) + "\n";
   debugLabelText += "Fires registered: " + std::to_string(fires) + "\n";
   debugLabelText += "Window size     : " + std::to_string(w) + "x" + std::to_string(h) + " (px)\n";
-  debugLabelText += "AA level        : " + std::to_string(window->getSettings().antialiasingLevel) + "\n";
+  debugLabelText += "AA level        : " + std::to_string(window->getSettings().antialiasingLevel) + " (next: " + std::to_string(settings.antialiasingLevel) + ")\n";
   debugLabelText += "\n";
   debugLabelText += "Fox Fires data:\n";
 
@@ -273,7 +310,7 @@ void Controller::requestUpdate() {
 int main(){
   Controller controller;
 
-  controller.init();
+  controller.init(false);
   controller.run();
 
   return 0;

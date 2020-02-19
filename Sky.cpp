@@ -11,7 +11,7 @@ Sky::Sky(Controller * controller) : RenderLayer(controller) {
   this->controller = controller;
 }
 
-void Sky::draw() {
+void Sky::draw(RenderTarget * renderTarget) {
 }
 
 void Sky::update() {

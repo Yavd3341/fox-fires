@@ -30,7 +30,7 @@ Stars::Stars(Controller * controller) : RenderLayer(controller) {
   }
 }
 
-void Stars::draw() {
+void Stars::draw(RenderTarget * renderTarget) {
   double timeMapped = map(controller->timeInternal, 0, 86400, -1, 1);
 
   if (timeMapped >= -0.66 && timeMapped <= 0.66)
@@ -67,8 +67,8 @@ void Stars::draw() {
       Vertex(Vector2f(x, y + radius), Color::Transparent)
     };
 
-    controller->window->draw(line1, 3, LineStrip);
-    controller->window->draw(line2, 3, LineStrip);
+    renderTarget->draw(line1, 3, LineStrip);
+    renderTarget->draw(line2, 3, LineStrip);
   }
 }
 
