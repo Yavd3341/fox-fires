@@ -230,7 +230,7 @@ namespace FG {
       unsigned int starsCount;
 
       double blinkOffset = 0;
-      double blinkDelta = 2.5;
+      double blinkDelta = 0.25;
       bool autoSetDelta = true;
       double hMod = 1;
       int radius = 6;

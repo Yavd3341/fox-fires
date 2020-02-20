@@ -14,7 +14,7 @@ Stars::Stars(Controller * controller) : RenderLayer(controller) {
   unsigned int dh = VideoMode::getDesktopMode().height;
 
   if (autoSetDelta)
-    blinkDelta = ((double)std::max(dw, dh) / std::min(dw, dh)) * 2.5;
+    blinkDelta *= ((double)std::max(dw, dh) / std::min(dw, dh));
 
   starsCount = (dw * dh) / 1000;
 

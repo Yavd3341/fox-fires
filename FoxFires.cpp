@@ -28,7 +28,6 @@ void FoxFires::draw(RenderTarget * renderTarget) {
   for (int x = 0; x < controller->w; x++) {
     int i = map(x, 0, controller->w, 0, dataLength);
     currentData = data[i];
-    prevData = (i == 0 ? currentData : data[i - 1]);
     nextData = (i == dataLength - 1 ? currentData : data[i + 1]);
 
     timeMapped = map(controller->timeInternal, 0, 86400, -1, 1);
