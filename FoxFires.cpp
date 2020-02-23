@@ -30,8 +30,6 @@ void FoxFires::draw(RenderTarget * renderTarget) {
     currentData = data[i];
     nextData = (i == dataLength - 1 ? currentData : data[i + 1]);
 
-    timeMapped = map(controller->timeInternal, 0, 86400, -1, 1);
-
     mapI = map(i, 0, dataLength, 0, 180);
     maskDouble = 1;
     yMod = (flags & Flags::UseYSine)? map(sin((ySineOffset + mapI * 2) * M_PI / 180.0), -1, 1, 0, 1) : 0;
@@ -45,13 +43,9 @@ void FoxFires::draw(RenderTarget * renderTarget) {
     }
 
     if (timeMapped < 0 && timeMapped > -0.80 && timeMapped < -0.70)
-      timeMapped = map(timeMapped, -0.80, -0.70, 1, 0);
+      maskDouble *= map(timeMapped, -0.80, -0.70, 1, 0);
     else if (timeMapped > 0 && timeMapped > 0.70 && timeMapped < 0.80)
-      timeMapped = map(timeMapped, 0.70, 0.80, 0, 1);
-    else
-      timeMapped = 1;
-
-    maskDouble *= timeMapped;
+      maskDouble *= map(timeMapped, 0.70, 0.80, 0, 1);
 
     Color borders;
 

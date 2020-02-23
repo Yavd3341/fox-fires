@@ -42,16 +42,14 @@ void Stars::draw(RenderTarget * renderTarget) {
 
     double waneSine = sin((blinkOffset + i) * M_PI / 180);
 
-    timeMapped = map(controller->timeInternal, 0, 86400, -1, 1);
+    float maskFloat = 1;
 
     if (timeMapped < 0 && timeMapped > -0.75 && timeMapped < -0.66)
-      timeMapped = map(timeMapped, -0.75, -0.66, 1, 0);
+      maskFloat *= map(timeMapped, -0.75, -0.66, 1, 0);
     else if (timeMapped > 0 && timeMapped > 0.66 && timeMapped < 0.75)
-      timeMapped = map(timeMapped, 0.66, 0.75, 0, 1);
-    else
-      timeMapped = 1;
+      maskFloat *= map(timeMapped, 0.66, 0.75, 0, 1);
 
-    Color mask(0xFF, 0xFF, 0xFF, map(waneSine, -1, 1, 0.25, 1) * timeMapped * 0xFF);
+    Color mask(0xFF, 0xFF, 0xFF, map(waneSine, -1, 1, 0.25, 1) * maskFloat * 0xFF);
 
     Vertex line1[] =
     {
