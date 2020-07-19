@@ -3,13 +3,13 @@
 // FGroup (c) 2019
 //
 
+#define DEBUG false
+
 #include "FoxFires.hpp"
 
 using namespace FG;
 
 Vector2f Pine::defaultSize = Vector2f(0.1999995, 1);
-
-bool drawBoundingBox = false;
 
 const double prop = 0.7;
 
@@ -41,18 +41,16 @@ Pine::Pine(Controller * controller, Vector2f position, float sizeMult) : RenderL
 }
 
 void Pine::drawPine(RenderTarget * renderTarget, Vector2f pos, Vector2f size, Color log, Color sticks, unsigned int stickCount){
-  Vector2f s1l = Vector2f(pos.x, pos.y + size.y) - Vector2f(pos.x + size.x / 2, pos.y);
-  Vector2f s2l = Vector2f(pos.x, pos.y + size.y) - Vector2f(pos.x + size.x / 2, pos.y);
-
-  float step = size.y / stickCount;
+  Color shade = getColor(0x88);
 
   Vertex logVertex[] =
   {
-    Vertex(Vector2f(pos.x + size.x / 2, pos.y + size.y), log),
-    Vertex(Vector2f(pos.x + size.x / 2, pos.y), log)
+    Vertex(Vector2f(pos.x + size.x / 2, pos.y), log), // Top vertex
+    Vertex(Vector2f(pos.x + size.x / 2 + size.x / 15, pos.y + size.y), log * shade), // Right vertex
+    Vertex(Vector2f(pos.x + size.x / 2 - size.x / 15, pos.y + size.y), log * shade) // Left vertex
   };
 
-  renderTarget->draw(logVertex, 2, Lines);
+  renderTarget->draw(logVertex, 3, Triangles);
 
   int px = pos.x;
 
@@ -64,24 +62,39 @@ void Pine::drawPine(RenderTarget * renderTarget, Vector2f pos, Vector2f size, Co
   px = map(px, 0, controller->w, 0, controller->dataLength);
 
   Color sky = controller->skyAmbient[px] * Color(0x222222FF);
-  Color shade = getColor(0x88);
 
+  float step = size.y / stickCount;
   for (int i = stickCount; i > 0; i--) {
+    float tmp = (step * i);
+
+    // Top vertex position
+    Vector2f base = Vector2f(pos.x + size.x / 2, pos.y + size.y - tmp);
+
+    // Right vertex position
+    Vector2f s1l = Vector2f(pos.x, pos.y + size.y) - Vector2f(pos.x + size.x / 2, pos.y);
+    Vector2f s1ln = Vector2f(pos.x, pos.y + size.y) - base;
+    s1ln = setVectorLenght(s1ln, map(getVectorLenght(s1ln), 0, getVectorLenght(s1l), tmp, step));
+
+    if (s1ln.y * 0.8 < 5)
+      continue;
+
+    // Bottom vertex position
+    Vector2f bottom = Vector2f(0, s1ln.y * 0.8);
+
+    // Left vertex position
+    Vector2f s2l = Vector2f(pos.x, pos.y + size.y) - Vector2f(pos.x + size.x / 2, pos.y);
+    Vector2f s2ln = Vector2f(pos.x + size.x, pos.y + size.y) - base;
+    s2ln = setVectorLenght(s2ln, map(getVectorLenght(s2ln), 0, getVectorLenght(s2l), tmp, step));
+
     Color mappedColor = (sticks * getColor(map(i, stickCount, 1, 0xFF, 0x88)) + sky) * (controller->backColor + Color(0x666666FF));
     Color layerShade = getColor(map(i, 1, stickCount, 0x88, 0xFF));
     mappedColor.a = 0xFF;
 
-    float tmp = (step * i);
-
-    Vector2f base = Vector2f(pos.x + size.x / 2, pos.y + size.y - tmp);
-
-    Vector2f s1ln = Vector2f(pos.x, pos.y + size.y) - base;
-    Vector2f s2ln = Vector2f(pos.x + size.x, pos.y + size.y) - base;
     Vertex stick[] = {
       Vertex(base, mappedColor * layerShade),
-      Vertex(setVectorLenght(s1ln, map(getVectorLenght(s1ln), 0, getVectorLenght(s1l), tmp, step)) + base, mappedColor * shade * layerShade),
-      Vertex(base + Vector2f(0, step * 1.5), mappedColor * layerShade),
-      Vertex(setVectorLenght(s2ln, map(getVectorLenght(s2ln), 0, getVectorLenght(s2l), tmp, step)) + base, mappedColor * shade * layerShade)
+      Vertex(s1ln + base, mappedColor * shade * layerShade),
+      Vertex(bottom + base, mappedColor * layerShade),
+      Vertex(s2ln + base, mappedColor * shade * layerShade)
     };
     renderTarget->draw(stick, 4, Quads);
   }
@@ -98,27 +111,27 @@ void Pine::draw(RenderTarget * renderTarget){
 
   Pine::drawPine(renderTarget, tmpPos, tmpSize, logColor, sticksColor, stickCount);
 
-  if (drawBoundingBox) {
-    RectangleShape rectangle;
-    rectangle.setSize(tmpSize);
-    rectangle.setOutlineColor(Color::Red);
-    rectangle.setFillColor(Color::Transparent);
-    rectangle.setOutlineThickness(1);
-    rectangle.setPosition(tmpPos);
-    renderTarget->draw(rectangle);
+#if DEBUG
+  RectangleShape rectangle;
+  rectangle.setSize(tmpSize);
+  rectangle.setOutlineColor(Color::Red);
+  rectangle.setFillColor(Color::Transparent);
+  rectangle.setOutlineThickness(1);
+  rectangle.setPosition(tmpPos);
+  renderTarget->draw(rectangle);
 
-    CircleShape circle;
-    circle.setRadius(2);
-    circle.setFillColor(sf::Color::Yellow);
-    circle.setPosition(tmpPos - Vector2f(2, 2));
-    renderTarget->draw(circle);
+  CircleShape circle;
+  circle.setRadius(2);
+  circle.setFillColor(sf::Color::Yellow);
+  circle.setPosition(tmpPos - Vector2f(2, 2));
+  renderTarget->draw(circle);
 
-    CircleShape circle2;
-    circle2.setRadius(2);
-    circle2.setFillColor(sf::Color::Green);
-    circle2.setPosition(Vector2f(position.x * winSize.x, position.y * winSize.y) - Vector2f(2, 2));
-    renderTarget->draw(circle2);
-  }
+  CircleShape circle2;
+  circle2.setRadius(2);
+  circle2.setFillColor(sf::Color::Green);
+  circle2.setPosition(Vector2f(position.x * winSize.x, position.y * winSize.y) - Vector2f(2, 2));
+  renderTarget->draw(circle2);
+#endif
 }
 
 void Pine::update(){

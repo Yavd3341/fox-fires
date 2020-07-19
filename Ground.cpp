@@ -5,6 +5,7 @@
 
 #include "FoxFires.hpp"
 #include <vector>
+#include <algorithm>
 
 using namespace FG;
 
@@ -51,6 +52,12 @@ void Ground::bakeTrees() {
 
     layers.push_back(pine);
   }
+
+  std::sort(layers.begin(), layers.end(), [](RenderLayer* a, RenderLayer* b) {
+    Pine* pa = dynamic_cast<Pine*>(a);
+    Pine* pb = dynamic_cast<Pine*>(b);
+    return pa->position.y < pb->position.y;
+  });
 }
 
 void Ground::draw(RenderTarget * renderTarget) {
