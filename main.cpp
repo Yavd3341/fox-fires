@@ -170,8 +170,11 @@ void Controller::run() {
         if (event.key.code == Keyboard::R)
           flags ^= Flags::OverrideFFColors;
 
-        if (event.key.code == Keyboard::S && timeInternal > 15000 && timeInternal < 70000)
-          timeInternal = 70000;
+        if (event.key.code == Keyboard::S)
+          if (Keyboard::isKeyPressed(Keyboard::F3))
+            flags ^= Flags::LegacyStars;
+          else if (timeInternal > 15000 && timeInternal < 70000)
+            timeInternal = 70000;
 
         if (event.key.code == Keyboard::F3)
           flags ^= Flags::DrawGUI;
@@ -283,7 +286,7 @@ void Controller::requestDraw() {
 
 void Controller::requestUpdate() {
   debugLabelText = "";
-  debugLabelText += "FoxFires ver. 1.1.0\n";
+  debugLabelText += "FoxFires ver. 1.2.0\n";
   debugLabelText += "By Ilya Yavdoschuk\n";
   debugLabelText += "\n";
   debugLabelText += "Time " + (std::string)(!(flags & Flags::UpdateClock)? "[paused]" : "        ") + "   : " + std::to_string(timeInternal) + " seconds\n";

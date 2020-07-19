@@ -60,6 +60,7 @@ namespace FG {
           static const short UpdateClock = 1 << 6;
           static const short OverrideFFColors = 1 << 7;
           static const short TargetChanged = 1 << 8;
+          static const short LegacyStars = 1 << 9;
       };
 
       short flags;
@@ -229,6 +230,7 @@ namespace FG {
       double ** stars;
       unsigned int starsCount;
 
+      double maxBrightness = 0.75;
       double blinkOffset = 0;
       double blinkDelta = 0.25;
       bool autoSetDelta = true;
