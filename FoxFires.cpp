@@ -16,6 +16,17 @@ FoxFires::FoxFires(Controller * controller) : RenderLayer(controller) {
 
   for (int i = 0; i < dataLength; i++)
     data[i] = map(rand() % 4096, 0, 4096, 0, 360);
+
+  for (size_t i = 0; i < sizeof(sineMod) / sizeof(double); i++)
+    sineMod[i] = (rand() % 1000 + 1) / 250.0;
+}
+
+double FoxFires::getSine(double a) {
+  double result = 0;
+
+  for (size_t i = 0; i < sizeof(sineMod) / sizeof(double); i++)
+    result += sin((ySineOffset + a * sineMod[i]) * M_PI / 180.0);
+  return result / (sizeof(sineMod) / sizeof(double));
 }
 
 void FoxFires::draw(RenderTarget * renderTarget) {
@@ -32,7 +43,7 @@ void FoxFires::draw(RenderTarget * renderTarget) {
 
     mapI = map(i, 0, dataLength, 0, 180);
     maskDouble = 1;
-    yMod = (flags & Flags::UseYSine)? map(sin((ySineOffset + mapI * 2) * M_PI / 180.0), -1, 1, 0, 1) : 0;
+    yMod = (flags & Flags::UseYSine)? map(getSine(mapI), -1, 1, 0, 1) : 0;
 
     if ((flags & Flags::UseYSineWane))
       maskDouble *= map(yMod, 0, 1, 1, 0.8);

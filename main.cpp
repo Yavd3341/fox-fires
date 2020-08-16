@@ -79,17 +79,14 @@ void Controller::initLayers() {
   Ground * grd3 = new Ground(this);
 
   grd1->yOffset = h / 30.0 * 3;
-  grd1->sineMod = (rand() % 3 + 1) / 2.0;
   grd1->dark = Color(0xBBBBBBFF);
   grd1->bakeTrees();
 
   grd2->yOffset = h / 30.0 * 2;
-  grd2->sineMod = (rand() % 3 + 1) / 2.0;
   grd2->dark = Color(0x888888FF);
   grd2->bakeTrees();
 
   grd3->yOffset = h / 30.0 * 1;
-  grd3->sineMod = (rand() % 3 + 1) / 2.0;
   grd3->dark = Color(0x444444FF);
   grd3->bakeTrees();
 

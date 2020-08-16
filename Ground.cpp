@@ -27,6 +27,17 @@ Ground::Ground(Controller * controller) : RenderLayer(controller) {
 
   sineOffset = rand() % 360;
   treesSineOffset = rand() % 360;
+
+  for (size_t i = 0; i < sizeof(sineMod) / sizeof(double); i++)
+    sineMod[i] = (rand() % 1000 + 1) / 250.0;
+}
+
+double Ground::getSine(double a) {
+  double result = 0;
+
+  for (size_t i = 0; i < sizeof(sineMod) / sizeof(double); i++)
+    result += sin((sineOffset + a * sineMod[i]) * M_PI / 180.0);
+  return result / (sizeof(sineMod) / sizeof(double));
 }
 
 void Ground::bakeTrees() {
@@ -41,7 +52,7 @@ void Ground::bakeTrees() {
     double x = controller->w * ((Pine::defaultSize.x * treeSize) / 2 + i * (Pine::defaultSize.x * treeSize)) + map(rand() % 4096, 0, 4096, -10, 10);
 
     double mapI = map(x, 0, controller->w, 0, 360);
-    double yMod = map(sin((sineOffset + mapI * sineMod) * M_PI / 180.0), -1, 1, 0, 1);
+    double yMod = map(getSine(mapI), -1, 1, 0, 1);
 
     double y = controller->h - (yMod * yHeight) - yOffset + map(rand() % 4096, 0, 4095, 0, 20) + 10;
 
@@ -61,17 +72,18 @@ void Ground::bakeTrees() {
 }
 
 void Ground::draw(RenderTarget * renderTarget) {
-  for (int i = 0; i < controller->w; i++) {
-    double mapI = map(i, 0, controller->w, 0, 360);
-    double yMod = map(sin((sineOffset + mapI * sineMod) * M_PI / 180.0), -1, 1, 0, 1);
+  for (int x = 0; x < controller->w; x++) {
+    double mapI = map(x, 0, controller->w, 0, 360);
+    double yMod = map(getSine(mapI), -1, 1, 0, 1);
 
-    controller->skyAmbient[i] = applyAlpha(controller->skyAmbient[i]) * getMask(prop) + controller->ambientColor * getMask(1 - prop);
+    int ambientI = map(x, 0, controller->w, 0, controller->dataLength);
+    controller->skyAmbient[ambientI] = applyAlpha(controller->skyAmbient[ambientI]) * getMask(prop) + controller->ambientColor * getMask(1 - prop);
 
     Vertex line[] =
     {
-      Vertex(Vector2f(i, controller->h - (yMod * (yHeight + haloHeight)) - yOffset), (color1 * controller->skyAmbient[i] + color1) * dark),
-      Vertex(Vector2f(i, controller->h - (yMod * yHeight) - yOffset), (color2 * controller->skyAmbient[i] + color2) * dark),
-      Vertex(Vector2f(i, controller->h), (color2 + color2 * mask) * dark)
+      Vertex(Vector2f(x, controller->h - (yMod * (yHeight + haloHeight)) - yOffset), (color1 * controller->skyAmbient[ambientI] + color1) * dark),
+      Vertex(Vector2f(x, controller->h - (yMod * yHeight) - yOffset), (color2 * controller->skyAmbient[ambientI] + color2) * dark),
+      Vertex(Vector2f(x, controller->h), (color2 + color2 * mask) * dark)
     };
 
     renderTarget->draw(line, 3, LineStrip);

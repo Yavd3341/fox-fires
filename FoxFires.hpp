@@ -148,6 +148,7 @@ namespace FG {
       double maskDouble;
       double yMod;
       double yOffset = 0;
+      double sineMod[5];
 
       double oneI;
       double x1;
@@ -218,6 +219,7 @@ namespace FG {
       FoxFires(Controller * controller);
 
       virtual void postcalc(int x) = 0;
+      double getSine(double a);
 
       void draw(RenderTarget * renderTarget);
       void update();
@@ -300,7 +302,7 @@ namespace FG {
       Color dark;
 
       double sineOffset = 0;
-      double sineMod = 1;
+      double sineMod[5];
       double yOffset = 10;
       double yHeight = 25;
       double haloHeight = 15;
@@ -310,6 +312,7 @@ namespace FG {
       double treesSineOffset = 0;
       double treesSineMod = 1;
       void bakeTrees();
+      double getSine(double a);
 
       void draw(RenderTarget * renderTarget);
       void update();
