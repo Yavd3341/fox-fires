@@ -317,11 +317,13 @@ namespace FG {
       double yOffset = 10;
       double yHeight = 25;
       double haloHeight = 15;
+      unsigned int step = 10;
 
       Ground (Controller * controller);
 
       double treesSineOffset = 0;
       double treesSineMod = 1;
+      double treeDensity = 1.5;
       void bakeTrees();
       double getSine(double a);
 

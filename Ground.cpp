@@ -46,10 +46,11 @@ void Ground::bakeTrees() {
   layers.clear();
 
   float treeSize = 0.125;
-  int treesCount = ceil(1 / (Pine::defaultSize.x * treeSize));
+  float treeWidth = Pine::defaultSize.x * treeSize;
+  int treesCount = ceil(1 / treeWidth * treeDensity);
 
   for (int i = 0; i < treesCount; i++) {
-    double x = controller->w * ((Pine::defaultSize.x * treeSize) / 2 + i * (Pine::defaultSize.x * treeSize)) + map(rand() % 4096, 0, 4096, -10, 10);
+    double x = controller->w * (i * treeWidth / treeDensity + map(rand() % 4096, 0, 4096, -treeWidth / 2, treeWidth / 2));
 
     double mapI = map(x, 0, controller->w, 0, 360);
     double yMod = map(getSine(mapI), -1, 1, 0, 1);
@@ -72,22 +73,29 @@ void Ground::bakeTrees() {
 }
 
 void Ground::draw(RenderTarget * renderTarget) {
-  for (int x = 0; x < controller->w; x++) {
-    double mapI = map(x, 0, controller->w, 0, 360);
+  std::vector<Vertex> topVert;
+  std::vector<Vertex> botVert;
+
+  for (int x = 0; x <= controller->w / step + 1; x++) {
+    double mapI = map(x, 0, controller->w / step, 0, 360);
     double yMod = map(getSine(mapI), -1, 1, 0, 1);
 
-    int ambientI = map(x, 0, controller->w, 0, controller->dataLength);
-    controller->skyAmbient[ambientI] = applyAlpha(controller->skyAmbient[ambientI]) * getMask(prop) + controller->ambientColor * getMask(1 - prop);
+    int ambientI = map(x, 0, controller->w / step + 1, 0, controller->dataLength);
+    Color ambient = applyAlpha(controller->skyAmbient[ambientI]) * getMask(prop) + controller->ambientColor * getMask(1 - prop);
 
-    Vertex line[] =
-    {
-      Vertex(Vector2f(x, controller->h - (yMod * (yHeight + haloHeight)) - yOffset), (color1 * controller->skyAmbient[ambientI] + color1) * dark),
-      Vertex(Vector2f(x, controller->h - (yMod * yHeight) - yOffset), (color2 * controller->skyAmbient[ambientI] + color2) * dark),
-      Vertex(Vector2f(x, controller->h), (color2 + color2 * mask) * dark)
-    };
+    Vertex top(Vector2f(x * step, controller->h - (yMod * (yHeight + haloHeight)) - yOffset), (color1 * ambient + color1) * dark);
+    Vertex mid(Vector2f(x * step, controller->h - (yMod * yHeight) - yOffset), (color2 * ambient + color2) * dark);
+    Vertex bot(Vector2f(x * step, controller->h), (color2 + color2 * mask) * dark);
 
-    renderTarget->draw(line, 3, LineStrip);
+    topVert.push_back(top);
+    topVert.push_back(mid);
+
+    botVert.push_back(mid);
+    botVert.push_back(bot);
   }
+
+  renderTarget->draw(&topVert[0], topVert.size(), TriangleStrip);
+  renderTarget->draw(&botVert[0], botVert.size(), TriangleStrip);
 
   for (RenderLayer * layer : layers)
     layer->draw(renderTarget);
