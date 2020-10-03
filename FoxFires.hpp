@@ -27,6 +27,12 @@ namespace FG {
     return col * Color(col.a, col.a, col.a);
   }
 
+  static Vector2f rotateVector(Vector2f vec, float deg) {
+    float rad = deg * M_PI / 180.0;
+
+    return Vector2f(vec.x * cos(rad) - vec.y * sin(rad), vec.x * sin(rad) + vec.y * cos(rad));
+  }
+
   static float getVectorLenght(Vector2f vec) {
     return sqrt(vec.x * vec.x + vec.y * vec.y);
   }
@@ -287,7 +293,7 @@ namespace FG {
       unsigned int stickCount = 20;
 
       void drawPine(RenderTarget * renderTarget, Vector2f pos, Vector2f size,
-                    Color log, Color sticks, unsigned int stickCount);
+                    Color log, Color sticks, unsigned int stickCount, float targetAngle);
 
       Pine(Controller * controller, Vector2f position, Vector2f size);
       Pine(Controller * controller, Vector2f position, float sizeMult);

@@ -3,9 +3,17 @@
 // FGroup (c) 2019
 //
 
-#define DEBUG false
-
 #include "FoxFires.hpp"
+
+#ifdef DEBUG
+#define DEBUG_COLOR_BOUNDING_BOX Color::Red
+#define DEBUG_COLOR_INITIAL_POSITION Color::Yellow
+#define DEBUG_COLOR_CALCULATED_POSITION Color::Green
+#define DEBUG_COLOR_STICK_TOP_PATH Color::Cyan
+#define DEBUG_COLOR_STICK_BOTTOM_PATH Color:: Magenta
+#define DEBUG_COLOR_STICK_LEFT_PATH Color::White
+#define DEBUG_COLOR_STICK_RIGHT_PATH Color::Blue
+#endif
 
 using namespace FG;
 
@@ -40,17 +48,19 @@ Pine::Pine(Controller * controller, Vector2f position, float sizeMult) : RenderL
   sticksColor = Color(0x01796FFF);
 }
 
-void Pine::drawPine(RenderTarget * renderTarget, Vector2f pos, Vector2f size, Color log, Color sticks, unsigned int stickCount){
+void Pine::drawPine(RenderTarget * renderTarget, Vector2f pos, Vector2f size, Color log, Color sticks, unsigned int stickCount, float targetAngle){
   Color shade = getColor(0x88);
+  float step = size.y / stickCount;
 
   Vertex logVertex[] =
   {
-    Vertex(Vector2f(pos.x + size.x / 2, pos.y), log), // Top vertex
-    Vertex(Vector2f(pos.x + size.x / 2 + size.x / 15, pos.y + size.y), log * shade), // Right vertex
-    Vertex(Vector2f(pos.x + size.x / 2 - size.x / 15, pos.y + size.y), log * shade) // Left vertex
+    Vertex(Vector2f(pos.x + size.x / 2 - (stickCount - 1.0) / stickCount * (size.x / 15), pos.y + size.y - step * 2), log), // TL
+    Vertex(Vector2f(pos.x + size.x / 2 + (stickCount - 1.0) / stickCount * (size.x / 15), pos.y + size.y - step * 2), log), // TR
+    Vertex(Vector2f(pos.x + size.x / 2 + size.x / 15, pos.y + size.y), log), // BR
+    Vertex(Vector2f(pos.x + size.x / 2 - size.x / 15, pos.y + size.y), log)  // BL
   };
 
-  renderTarget->draw(logVertex, 3, Triangles);
+  renderTarget->draw(logVertex, 4, Quads);
 
   int px = pos.x;
 
@@ -62,42 +72,70 @@ void Pine::drawPine(RenderTarget * renderTarget, Vector2f pos, Vector2f size, Co
   px = map(px, 0, controller->w, 0, controller->dataLength);
 
   Color sky = controller->skyAmbient[px] * Color(0x222222FF);
-
-  float step = size.y / stickCount;
+  std::vector<Vertex> v;
+  #ifdef DEBUG
+  std::vector<Vertex> vt;
+  std::vector<Vertex> vl;
+  std::vector<Vertex> vb;
+  std::vector<Vertex> vr;
+  #endif
+  float angleStep = targetAngle / stickCount;
   for (int i = stickCount; i > 0; i--) {
     float tmp = (step * i);
+    float tmpAngle = (angleStep * i);
+
+    // Side reference vector
+    Vector2f sideRef = Vector2f(-size.x / 2, size.y);
 
     // Top vertex position
     Vector2f base = Vector2f(pos.x + size.x / 2, pos.y + size.y - tmp);
 
     // Right vertex position
-    Vector2f s1l = Vector2f(pos.x, pos.y + size.y) - Vector2f(pos.x + size.x / 2, pos.y);
     Vector2f s1ln = Vector2f(pos.x, pos.y + size.y) - base;
-    s1ln = setVectorLenght(s1ln, map(getVectorLenght(s1ln), 0, getVectorLenght(s1l), tmp, step));
+    s1ln = setVectorLenght(s1ln, map(getVectorLenght(s1ln), 0, getVectorLenght(sideRef), tmp, step));
 
     if (s1ln.y * 0.8 < 5)
       continue;
 
-    // Bottom vertex position
+    // Bottom vertex positions
     Vector2f bottom = Vector2f(0, s1ln.y * 0.8);
 
     // Left vertex position
-    Vector2f s2l = Vector2f(pos.x, pos.y + size.y) - Vector2f(pos.x + size.x / 2, pos.y);
-    Vector2f s2ln = Vector2f(pos.x + size.x, pos.y + size.y) - base;
-    s2ln = setVectorLenght(s2ln, map(getVectorLenght(s2ln), 0, getVectorLenght(s2l), tmp, step));
+    Vector2f s2ln = Vector2f(-s1ln.x, s1ln.y);
+
+    // Rotate vector
+    base += Vector2f(0, tmp) - rotateVector(Vector2f(0, tmp), tmpAngle);
+    s1ln = rotateVector(s1ln, tmpAngle);
+    bottom = rotateVector(bottom, tmpAngle);
+    s2ln = rotateVector(s2ln, tmpAngle);
 
     Color mappedColor = (sticks * getColor(map(i, stickCount, 1, 0xFF, 0x88)) + sky) * (controller->backColor + Color(0x666666FF));
     Color layerShade = getColor(map(i, 1, stickCount, 0x88, 0xFF));
     mappedColor.a = 0xFF;
 
-    Vertex stick[] = {
-      Vertex(base, mappedColor * layerShade),
-      Vertex(s1ln + base, mappedColor * shade * layerShade),
-      Vertex(bottom + base, mappedColor * layerShade),
-      Vertex(s2ln + base, mappedColor * shade * layerShade)
-    };
-    renderTarget->draw(stick, 4, Quads);
+    v.push_back(Vertex(base, mappedColor * layerShade));
+    v.push_back(Vertex(s1ln + base, mappedColor * shade * layerShade));
+    v.push_back(Vertex(bottom + base, mappedColor * layerShade));
+
+    v.push_back(Vertex(base, mappedColor * layerShade));
+    v.push_back(Vertex(s2ln + base, mappedColor * shade * layerShade));
+    v.push_back(Vertex(bottom + base, mappedColor * layerShade));
+
+    #ifdef DEBUG
+    vt.push_back(Vertex(base, Color::Cyan));
+    vl.push_back(Vertex(s1ln + base, Color::Red));
+    vb.push_back(Vertex(bottom + base, Color::Green));
+    vr.push_back(Vertex(s2ln + base, Color::Magenta));
+    #endif
   }
+
+  renderTarget->draw(&v[0], v.size(), Triangles);
+  #ifdef DEBUG
+  renderTarget->draw(&vt[0], vt.size(), LineStrip);
+  renderTarget->draw(&vl[0], vl.size(), LineStrip);
+  renderTarget->draw(&vb[0], vb.size(), LineStrip);
+  renderTarget->draw(&vr[0], vr.size(), LineStrip);
+  #endif
 }
 
 void Pine::draw(RenderTarget * renderTarget){
@@ -109,9 +147,9 @@ void Pine::draw(RenderTarget * renderTarget){
 
   tmpPos = Vector2f(tmpPos.x * winSize.x, tmpPos.y * winSize.y);
 
-  Pine::drawPine(renderTarget, tmpPos, tmpSize, logColor, sticksColor, stickCount);
+  Pine::drawPine(renderTarget, tmpPos, tmpSize, logColor, sticksColor, stickCount, 0);
 
-#if DEBUG
+#ifdef DEBUG
   RectangleShape rectangle;
   rectangle.setSize(tmpSize);
   rectangle.setOutlineColor(Color::Red);
