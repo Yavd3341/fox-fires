@@ -33,7 +33,7 @@ void FoxFires::draw(RenderTarget * renderTarget) {
 
   double timeMapped = map(controller->timeInternal, 0, 86400, -1, 1);
 
-  if (timeMapped >= -0.70 && timeMapped <= 0.70)
+  if (timeMapped >= -0.70 && timeMapped <= 0.70 || flags & Flags::Disabled)
     return;
 
   for (int x = 0; x < controller->w; x++) {
@@ -153,7 +153,17 @@ void FoxFires::update() {
   while (colorOffset > colorsLength + 1)
     colorOffset -= colorsLength;
 
+  double timeMapped = map(controller->timeInternal, 0, 86400, -1, 1);
+  if (timeMapped >= -0.70 && timeMapped <= 0.70) {
+    bool ctSet = (controller->flags & Controller::Flags::DarkNight);
+    bool ffSet = (flags & Flags::Disabled);
+    if (ctSet != ffSet)
+      flags ^= Flags::Disabled;
+  }
+
+  // DEBUG
   controller->debugLabelText += "\n";
+  controller->debugLabelText += "Flags       : " + std::to_string(flags) + "\n";
   controller->debugLabelText += "Energy sine : " + std::to_string(energySineOffset) +  +" (+" + std::to_string(energySineDelta) + ")\n";
   controller->debugLabelText += "Y sine      : " + std::to_string(ySineOffset) +  +" (+" + std::to_string(ySineDelta) + ")\n";
   controller->debugLabelText += "Wane sine   : " + std::to_string(waneSineOffset) +  +" (+" + std::to_string(waneSineDelta) + ")\n";

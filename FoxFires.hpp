@@ -61,6 +61,7 @@ namespace FG {
           static const short OverrideFFColors = 1 << 7;
           static const short TargetChanged = 1 << 8;
           static const short LegacyStars = 1 << 9;
+          static const short DarkNight = 1 << 10;
       };
 
       short flags;
@@ -83,6 +84,7 @@ namespace FG {
       int envs = 0;
       int envr = 0;
       int fires = 0;
+      int litNights = 0;
 
       Color backColor;
       Color ambientColor;
@@ -189,6 +191,9 @@ namespace FG {
           // WANE SINE FLAGS
           static const short UseWaneSine = 1 << 8;
           static const short UpdateWaneSine = 1 << 9;
+
+          // OTHER FLAGS
+          static const short Disabled = 1 << 10;
       };
 
       static const short defaultFlags = Flags::UseData

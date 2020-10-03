@@ -50,6 +50,7 @@ void Controller::initLayers() {
   envs = 0;
   envr = 0;
   fires = 0;
+  litNights = 0;
 
   timeInternal = 0;
 
@@ -206,9 +207,6 @@ void Controller::run() {
               timeInternal += timeManualDelta * 10;
             else
               timeInternal += timeManualDelta;
-
-            if (timeInternal > 86400)
-              timeInternal -= 86400;
           }
         }
 
@@ -220,9 +218,6 @@ void Controller::run() {
               timeInternal -= timeManualDelta * 10;
             else
               timeInternal -= timeManualDelta;
-
-            if (timeInternal < 0)
-              timeInternal += 86400;
           }
         }
 
@@ -292,13 +287,22 @@ void Controller::requestUpdate() {
   debugLabelText += "Fires registered: " + std::to_string(fires) + "\n";
   debugLabelText += "Window size     : " + std::to_string(w) + "x" + std::to_string(h) + " (px)\n";
   debugLabelText += "AA level        : " + std::to_string(window->getSettings().antialiasingLevel) + " (next: " + std::to_string(settings.antialiasingLevel) + ")\n";
+  debugLabelText += "Lit nights      : " + std::to_string(litNights) + "\n";
+  debugLabelText += "Flags           : " + std::to_string(flags) + "\n";
   debugLabelText += "\n";
   debugLabelText += "Fox Fires data:\n";
 
   if (flags & Flags::UpdateClock) {
     timeInternal += timeDelta;
-    while (timeInternal > 86400)
-      timeInternal -= 86400;
+    while (timeInternal > 86400 || timeInternal < 0) {
+      timeInternal -= (timeInternal > 86400 ? 86400 : -86400);
+      if (flags & Flags::DarkNight || litNights > 3) {
+        flags ^= (Flags::DarkNight * (rand() % 2));
+        litNights = 0;
+      }
+      else if ((flags & Flags::DarkNight) == 0)
+        litNights++;
+    }
   }
 
   for (RenderLayer * layer : layers)
