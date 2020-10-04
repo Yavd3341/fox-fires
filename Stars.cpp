@@ -36,52 +36,24 @@ void Stars::draw(RenderTarget * renderTarget) {
   if (timeMapped >= -0.66 && timeMapped <= 0.66)
     return;
 
+  std::vector<Vertex> v;
   for (int i = 0; i < starsCount; i++) {
-
     float maskFloat = 1;
     if (timeMapped < 0 && timeMapped > -0.75 && timeMapped < -0.66)
       maskFloat *= map(timeMapped, -0.75, -0.66, 1, 0);
     else if (timeMapped > 0 && timeMapped > 0.66 && timeMapped < 0.75)
       maskFloat *= map(timeMapped, 0.66, 0.75, 0, 1);
 
-    if (controller->flags & Controller::Flags::LegacyStars) {
-      unsigned int x = stars[i][0] * controller->w + radius;
-      unsigned int y = stars[i][1] * controller->h * hMod + radius;
+    unsigned int x = stars[i][0] * controller->w;
+    unsigned int y = stars[i][1] * controller->h * hMod;
 
-      double waneSine = sin((blinkOffset + i) * M_PI / 180);
+    double waneSine = sin((blinkOffset + i) * M_PI / 180);
+    Color mask(0xFF, 0xFF, 0xFF, map(waneSine, -1, 1, 0.9, 1) * maskFloat * maxBrightness * 0xFF);
 
-      Color mask(0xFF, 0xFF, 0xFF, map(waneSine, -1, 1, 0.25, 1) * maskFloat * 0xFF);
-
-      Vertex line1[] =
-      {
-        Vertex(Vector2f(x - radius, y), Color::Transparent),
-        Vertex(Vector2f(x, y), color * mask),
-        Vertex(Vector2f(x + radius, y), Color::Transparent)
-      };
-
-      Vertex line2[] =
-      {
-        Vertex(Vector2f(x, y - radius), Color::Transparent),
-        Vertex(Vector2f(x, y), color * mask),
-        Vertex(Vector2f(x, y + radius), Color::Transparent)
-      };
-
-      renderTarget->draw(line1, 3, LineStrip);
-      renderTarget->draw(line2, 3, LineStrip);
-    }
-    else {
-      unsigned int x = stars[i][0] * controller->w;
-      unsigned int y = stars[i][1] * controller->h * hMod;
-
-      double waneSine = sin((blinkOffset + i) * M_PI / 180);
-
-      Color mask(0xFF, 0xFF, 0xFF, map(waneSine, -1, 1, 0.9, 1) * maskFloat * maxBrightness * 0xFF);
-
-      Vertex star[] = { Vertex(Vector2f(x, y), color * mask) };
-
-      renderTarget->draw(star, 1, Points);
-    }
+    v.push_back(Vertex(Vector2f(x, y), color * mask));
   }
+
+  renderTarget->draw(&v[0], v.size(), Points);
 }
 
 void Stars::update() {

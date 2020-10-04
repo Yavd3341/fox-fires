@@ -85,10 +85,10 @@ void Pine::drawPine(RenderTarget * renderTarget, Vector2f pos, Vector2f size, Co
     float tmpAngle = (angleStep * i);
 
     // Side reference vector
-    Vector2f sideRef = Vector2f(-size.x / 2, size.y);
+    Vector2f sideRef(-size.x / 2, size.y);
 
     // Top vertex position
-    Vector2f base = Vector2f(pos.x + size.x / 2, pos.y + size.y - tmp);
+    Vector2f base(pos.x + size.x / 2, pos.y + size.y - tmp);
 
     // Right vertex position
     Vector2f s1ln = Vector2f(pos.x, pos.y + size.y) - base;
@@ -98,10 +98,10 @@ void Pine::drawPine(RenderTarget * renderTarget, Vector2f pos, Vector2f size, Co
       continue;
 
     // Bottom vertex positions
-    Vector2f bottom = Vector2f(0, s1ln.y * 0.8);
+    Vector2f bottom(0, s1ln.y * 0.8);
 
     // Left vertex position
-    Vector2f s2ln = Vector2f(-s1ln.x, s1ln.y);
+    Vector2f s2ln(-s1ln.x, s1ln.y);
 
     // Rotate vector
     base += Vector2f(0, tmp) - rotateVector(Vector2f(0, tmp), tmpAngle);
@@ -141,9 +141,9 @@ void Pine::drawPine(RenderTarget * renderTarget, Vector2f pos, Vector2f size, Co
 void Pine::draw(RenderTarget * renderTarget){
   Vector2f localSize = size * sizeMult;
 
-  Vector2f winSize = Vector2f(controller->w, controller->h);
+  Vector2f winSize(controller->w, controller->h);
   Vector2f tmpPos = position - Vector2f(localSize.x / 2, localSize.y);
-  Vector2f tmpSize = Vector2f(localSize.x * winSize.x, localSize.y * winSize.y);
+  Vector2f tmpSize(localSize.x * winSize.x, localSize.y * winSize.y);
 
   tmpPos = Vector2f(tmpPos.x * winSize.x, tmpPos.y * winSize.y);
 

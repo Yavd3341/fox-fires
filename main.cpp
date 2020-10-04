@@ -32,7 +32,7 @@ Controller::Controller() {
   h = 600;
 }
 
-
+Clock fpsClock;
 int fps = 60;
 ContextSettings settings;
 
@@ -169,9 +169,7 @@ void Controller::run() {
           flags ^= Flags::OverrideFFColors;
 
         if (event.key.code == Keyboard::S)
-          if (Keyboard::isKeyPressed(Keyboard::F3))
-            flags ^= Flags::LegacyStars;
-          else if (timeInternal > 15000 && timeInternal < 70000)
+          if (timeInternal > 15000 && timeInternal < 70000)
             timeInternal = 70000;
 
         if (event.key.code == Keyboard::F3)
@@ -233,8 +231,12 @@ void Controller::run() {
       }
 
       if (event.type == Event::Resized) {
-        FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+        unsigned int sw = event.size.width < 300 ? 300 : event.size.width;
+        unsigned int sh = event.size.height < 300 ? 300 : event.size.height;
+        FloatRect visibleArea(0, 0, sw, sh);
         window->setView(View(visibleArea));
+        if (event.size.width < 300 || event.size.height < 300)
+          window->setSize(Vector2u(sw, sh));
       }
     }
 
@@ -277,10 +279,14 @@ void Controller::requestDraw() {
 }
 
 void Controller::requestUpdate() {
+  float currentTime = fpsClock.restart().asSeconds();
+  float fpsCurr = 1.f / currentTime;
+
   debugLabelText = "";
-  debugLabelText += "FoxFires ver. 1.2.0\n";
-  debugLabelText += "By Ilya Yavdoschuk\n";
+  debugLabelText += "FoxFires ver. 1.3.0\n";
+  debugLabelText += "By Illia Yavdoshchuk\n";
   debugLabelText += "\n";
+  debugLabelText += "FPS             : " + std::to_string((int)round(fpsCurr)) + " (max " + std::to_string(fps) + " - " + std::to_string((int)(round(fpsCurr / fps * 100))) + "%)\n";
   debugLabelText += "Time " + (std::string)(!(flags & Flags::UpdateClock)? "[paused]" : "        ") + "   : " + std::to_string(timeInternal) + " seconds\n";
   debugLabelText += "Time delta      : " + std::to_string(timeDelta) + " (" + std::to_string(timeManualDelta) + ") seconds per update\n";
   debugLabelText += "Sky data length : " + std::to_string(dataLength) + "\n";

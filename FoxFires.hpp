@@ -66,8 +66,7 @@ namespace FG {
           static const short UpdateClock = 1 << 6;
           static const short OverrideFFColors = 1 << 7;
           static const short TargetChanged = 1 << 8;
-          static const short LegacyStars = 1 << 9;
-          static const short DarkNight = 1 << 10;
+          static const short DarkNight = 1 << 9;
       };
 
       short flags;
@@ -129,7 +128,8 @@ namespace FG {
       // Controller variables
       //
 
-      int dataLength = VideoMode::getDesktopMode().width / 10;
+      unsigned int step = 10;
+      unsigned int dataLength = VideoMode::getDesktopMode().width / step;
       double* data = new double[dataLength];
 
       int currentColor = 0;
