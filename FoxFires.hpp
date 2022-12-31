@@ -65,8 +65,9 @@ namespace FG {
           static const short ShowCursor = 1 << 5;
           static const short UpdateClock = 1 << 6;
           static const short OverrideFFColors = 1 << 7;
-          static const short TargetChanged = 1 << 8;
-          static const short DarkNight = 1 << 9;
+          static const short FillMode = 1 << 8;
+          static const short TargetChanged = 1 << 9;
+          static const short DarkNight = 1 << 10;
       };
 
       short flags;
@@ -128,109 +129,45 @@ namespace FG {
       // Controller variables
       //
 
-      unsigned int step = 10;
-      unsigned int dataLength = VideoMode::getDesktopMode().width / step;
-      double* data = new double[dataLength];
+      bool stateOverride = true;
 
       int currentColor = 0;
-      const static int colorsLength = 5;
+      const static int colorsLength = 1;
       const Color colors[colorsLength] = {
         Color(0x00FF8888),
-        Color(0x0088FF88),
-        Color(0xDD00DD88),
-        Color(0xDD00DD88),
-        Color(0x0088FF88)
+        //Color(0x0088FF88),
+        //Color(0xDD00DD88),
+        //Color(0xDD00DD88),
+        //Color(0x0088FF88)
       };
 
-      //
-      // Draw variables
-      //
-
-      unsigned int ambientDiff = 10;
-
-      double prevData;
-      double currentData;
-      double nextData;
-
-      double mapI;
-      double maskDouble;
-      double yMod;
-      double yOffset = 0;
-      double sineMod[5];
-
-      double oneI;
-      double x1;
-      int colorBaseIndex;
-
-      double x2;
-
-      Color color;
-      Color mixedColor;
-      Color mask1;
-      Color mask2;
-      Color mask;
+	    Glsl::Vec4* colors_s = new Glsl::Vec4 [3];
 
     public:
+
+      static Shader shader;
 
       //
       // Public variables
       //
 
-      class Flags {
+      float strokes = 25; // Magic number. Roughly 1 unit = 2 strokes.
+      
+	    float time = 0;
+	    float timeDelta = 0.0005;
+      
+      float leftOffset = 0;
+      float leftTopFraction = 0.8;
+      float leftMiddleFraction = 0;
 
-        public:
+      float rightOffset = 0;
+      float rightTopFraction = 0.8;
+      float rightMiddleFraction = 0;
 
-          // DATA FLAGS
-          static const short UseData = 1 << 0;
-          static const short UpdateData = 1 << 1;
-          static const short CycleData = 1 << 2;
-
-          // Y SINE FLAGS
-          static const short UseYSine = 1 << 3;
-          static const short UpdateYSine = 1 << 4;
-          static const short UseYSineWane = 1 << 5;
-
-          // COLOR FLAGS
-          static const short Monochrome = 1 << 6;
-          static const short UpdateColor = 1 << 7;
-
-          // WANE SINE FLAGS
-          static const short UseWaneSine = 1 << 8;
-          static const short UpdateWaneSine = 1 << 9;
-
-          // OTHER FLAGS
-          static const short Disabled = 1 << 10;
-      };
-
-      static const short defaultFlags = Flags::UseData
-                                        | Flags::UpdateData
-                                        | Flags::UseYSine
-                                        | Flags::UpdateYSine
-                                        | Flags::UseYSineWane
-                                        | Flags::UpdateColor
-                                        | Flags::UseWaneSine
-                                        | Flags::UpdateWaneSine;
-
-      short flags;
-      int coreHeight = 5;
-      int bottomMargin = 100;
-      double size = 0.9;
-      double totalSize = 1;
-
-      double energySineOffset = 0;
-      double ySineOffset = 0;
-      double waneSineOffset = 0;
-      double colorOffset = 0;
-
-      double energySineDelta = 1.5;
-      double ySineDelta = 1.25;
-      double waneSineDelta = 2.5;
-      double colorDelta = 0.001;
+      float randomSeed = 0;
+      float yPos, ySize;
 
       FoxFires(Controller * controller);
-
-      virtual void postcalc(int x) = 0;
-      double getSine(double a);
 
       void draw(RenderTarget * renderTarget);
       void update();

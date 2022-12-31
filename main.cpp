@@ -11,21 +11,6 @@
 
 using namespace FG;
 
-class CustomFoxFires : public FoxFires {
-  public:
-
-    int cffOffset = 0;
-
-    CustomFoxFires(Controller * controller) : FoxFires(controller) {
-    }
-
-    void postcalc(int x) {
-      totalSize = map(x, 0, controller->w, 0.2, 0.9);
-      yOffset = map(x, 0, controller->w, 1, 0);
-      yOffset = map(1 - yOffset, 0, 1, controller->h - (controller->h * 0.6), -(controller->h * 0.3)) + cffOffset;
-    }
-};
-
 Controller::Controller() {
   backColor = Color(0, 0, 25);
   w = 800;
@@ -57,23 +42,30 @@ void Controller::initLayers() {
   for (int i = 0; i < dataLength; i++)
     skyAmbient[i] = ambientColor;
 
-  CustomFoxFires * ff1 = new CustomFoxFires(this);
-  CustomFoxFires * ff2 = new CustomFoxFires(this);
-  CustomFoxFires * ff3 = new CustomFoxFires(this);
+  FoxFires * ff1 = new FoxFires(this);
+  FoxFires * ff2 = new FoxFires(this);
+  FoxFires * ff3 = new FoxFires(this);
 
-  ff1->cffOffset = (h / 7.0);
-  ff1->ySineOffset = map(rand() % 4096, 0, 4096, 0, 360);
-  ff1->waneSineOffset = map(rand() % 4096, 0, 4096, 0, 360);
-  ff1->colorOffset = map(rand() % 4096, 0, 4096, 0, 0.6);
+  ff1->yPos = 0.2;
+  ff1->ySize = 1 / 2.5;
+  ff1->leftTopFraction = 0.9;
+  ff1->rightTopFraction = 0.2;
+  ff1->rightOffset = 0.6;
+  ff1->randomSeed = rand() % 4096 / 4096.;
 
-  ff2->ySineOffset = map(rand() % 4096, 0, 4096, 0, 360);
-  ff2->waneSineOffset = map(rand() % 4096, 0, 4096, 0, 360);
-  ff2->colorOffset = map(rand() % 4096, 0, 4096, 0, 0.6);
+  ff2->yPos = 0.05;
+  ff2->ySize = 1 / 2.5;
+  ff2->leftTopFraction = 0.9;
+  ff2->rightTopFraction = 0.2;
+  ff2->rightOffset = 0.6;
+  ff2->randomSeed = rand() % 4096 / 4096.;
 
-  ff3->cffOffset = -(h / 7.0);
-  ff3->ySineOffset = map(rand() % 4096, 0, 4096, 0, 360);
-  ff3->waneSineOffset = map(rand() % 4096, 0, 4096, 0, 360);
-  ff3->colorOffset = map(rand() % 4096, 0, 4096, 0, 0.6);
+  ff3->yPos = -0.1;
+  ff3->ySize = 1 / 2.5;
+  ff3->leftTopFraction = 0.9;
+  ff3->rightTopFraction = 0.2;
+  ff3->rightOffset = 0.6;
+  ff3->randomSeed = rand() % 4096 / 4096.;
 
   Ground * grd1 = new Ground(this);
   Ground * grd2 = new Ground(this);
@@ -111,11 +103,12 @@ void Controller::initLayers() {
 }
 
 void Controller::init(bool windowOnly) {
-
   if (!windowOnly) {
     // Setting flags
 
     flags = Flags::ShowCursor | Flags::UpdateClock;
+
+	  FoxFires::shader.loadFromFile("shaders/fox-fires.frag", Shader::Fragment);
 
     if (!font.loadFromFile("font.ttf"))
       flags |= Flags::FontFailure;
@@ -171,6 +164,9 @@ void Controller::run() {
         if (event.key.code == Keyboard::S)
           if (timeInternal > 15000 && timeInternal < 70000)
             timeInternal = 70000;
+
+        if (event.key.code == Keyboard::D)
+          flags ^= Flags::FillMode;
 
         if (event.key.code == Keyboard::F3)
           flags ^= Flags::DrawGUI;
@@ -283,7 +279,7 @@ void Controller::requestUpdate() {
   float fpsCurr = 1.f / currentTime;
 
   debugLabelText = "";
-  debugLabelText += "FoxFires ver. 1.3.0\n";
+  debugLabelText += "FoxFires ver. 1.4.0\n";
   debugLabelText += "By Illia Yavdoshchuk\n";
   debugLabelText += "\n";
   debugLabelText += "FPS             : " + std::to_string((int)round(fpsCurr)) + " (max " + std::to_string(fps) + " - " + std::to_string((int)(round(fpsCurr / fps * 100))) + "%)\n";

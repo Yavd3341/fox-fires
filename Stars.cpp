@@ -16,7 +16,7 @@ Stars::Stars(Controller * controller) : RenderLayer(controller) {
   if (autoSetDelta)
     blinkDelta *= ((double)std::max(dw, dh) / std::min(dw, dh));
 
-  starsCount = (dw * dh) / 1000;
+  starsCount = (dw * dh) / 3000;
 
   stars = new double*[starsCount];
   for (int i = 0; i < starsCount; i++)
