@@ -66,7 +66,7 @@ void main() {
 	vec2 slice = mix(heights.xy, heights.zw, lc.x);
 	float offset = mix(offsets.x, offsets.y, lc.x);
 
-    float ctimen = ctime / 86400. * 2;
+    float ctimen = ctime / 86400. * 2.;
     float ctimena = abs(ctimen);
 	
 	if (lc.y < offset || ctimena <= 0.7)
